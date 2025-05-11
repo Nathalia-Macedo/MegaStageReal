@@ -1,5 +1,3 @@
-// "use client"
-
 // import { useState, useEffect } from "react"
 // import {
 //   User,
@@ -18,12 +16,10 @@
 //   Key,
 //   UserCircle,
 // } from "lucide-react"
-// import { toast } from "react-toastify"
-
+// import { useUsers } from "../../contexts/users-context"
+// import ConfirmationModal from "../ConfirmationModal"
 // export default function UserManagement() {
-//   const [users, setUsers] = useState([])
-//   const [loading, setLoading] = useState(true)
-//   const [error, setError] = useState(null)
+//   const { users, loading, error, fetchUsers, deleteUser, createUser } = useUsers()
 //   const [searchTerm, setSearchTerm] = useState("")
 //   const [filteredUsers, setFilteredUsers] = useState([])
 //   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false)
@@ -48,7 +44,7 @@
 
 //   useEffect(() => {
 //     fetchUsers()
-//   }, [])
+//   }, [fetchUsers])
 
 //   useEffect(() => {
 //     if (users.length > 0) {
@@ -69,47 +65,9 @@
 //         setCurrentPage(1)
 //       }
 //     }
-//   }, [users, searchTerm, itemsPerPage])
+//   }, [users, searchTerm, itemsPerPage, currentPage])
 
-//   const fetchUsers = async () => {
-//     setLoading(true)
-//     setError(null)
-
-//     try {
-//       const token = localStorage.getItem("token")
-
-//       if (!token) {
-//         throw new Error("Token de autenticação não encontrado")
-//       }
-
-//       const response = await fetch("https://megastage.onrender.com/api/v1/users", {
-//         method: "GET",
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//         },
-//       })
-
-//       if (!response.ok) {
-//         throw new Error(`Erro ao buscar usuários: ${response.status}`)
-//       }
-
-//       const data = await response.json()
-//       setUsers(data)
-//       setFilteredUsers(data)
-
-//       // Calcular total de páginas
-//       setTotalPages(Math.ceil(data.length / itemsPerPage) || 1)
-//     } catch (error) {
-//       console.error("Erro ao buscar usuários:", error)
-//       setError(error.message)
-//       toast.error(`Erro ao carregar usuários: ${error.message}`)
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-
-//   const createUser = async (e) => {
+//   const handleCreateUser = async (e) => {
 //     e.preventDefault()
 
 //     // Validação
@@ -132,27 +90,7 @@
 //     setFormErrors({})
 
 //     try {
-//       const token = localStorage.getItem("token")
-
-//       if (!token) {
-//         throw new Error("Token de autenticação não encontrado")
-//       }
-
-//       const response = await fetch("https://megastage.onrender.com/api/v1/users", {
-//         method: "POST",
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(newUser),
-//       })
-
-//       if (!response.ok) {
-//         const errorData = await response.json().catch(() => ({}))
-//         throw new Error(errorData.message || `Erro ao criar usuário: ${response.status}`)
-//       }
-
-//       await fetchUsers()
+//       await createUser(newUser)
 //       setIsAddUserModalOpen(false)
 //       setNewUser({
 //         email: "",
@@ -160,10 +98,8 @@
 //         first_name: "",
 //         last_name: "",
 //       })
-//       toast.success("Usuário criado com sucesso!")
 //     } catch (error) {
-//       console.error("Erro ao criar usuário:", error)
-//       toast.error(`Erro ao criar usuário: ${error.message}`)
+//       // Erro já tratado no contexto
 //     } finally {
 //       setIsSubmitting(false)
 //     }
@@ -178,31 +114,11 @@
 //     if (!userToDelete) return
 
 //     try {
-//       const token = localStorage.getItem("token")
-
-//       if (!token) {
-//         throw new Error("Token de autenticação não encontrado")
-//       }
-
-//       const response = await fetch(`https://megastage.onrender.com/api/v1/users/${userToDelete.id}`, {
-//         method: "DELETE",
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//         },
-//       })
-
-//       if (!response.ok) {
-//         throw new Error(`Erro ao excluir usuário: ${response.status}`)
-//       }
-
-//       await fetchUsers()
+//       await deleteUser(userToDelete.id)
 //       setIsDeleteModalOpen(false)
 //       setUserToDelete(null)
-//       toast.success("Usuário excluído com sucesso!")
 //     } catch (error) {
-//       console.error("Erro ao excluir usuário:", error)
-//       toast.error(`Erro ao excluir usuário: ${error.message}`)
+//       // Erro já tratado no contexto
 //     }
 //   }
 
@@ -366,7 +282,7 @@
 //             <input
 //               type="text"
 //               placeholder="Buscar usuários..."
-//               className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+//               className="pl-10 pr-4 py-2 w-full text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
 //               value={searchTerm}
 //               onChange={(e) => setSearchTerm(e.target.value)}
 //             />
@@ -374,7 +290,7 @@
 
 //           <div className="flex items-center gap-2 w-full md:w-auto justify-end">
 //             <button
-//               onClick={fetchUsers}
+//               onClick={() => fetchUsers()}
 //               className="flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
 //               disabled={loading}
 //             >
@@ -625,7 +541,7 @@
 //               </button>
 //             </div>
 
-//             <form onSubmit={createUser} className="p-6">
+//             <form onSubmit={handleCreateUser} className="p-6">
 //               <div className="space-y-4">
 //                 <div>
 //                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -636,16 +552,16 @@
 //                       <Mail className="h-5 w-5 text-gray-400" />
 //                     </div>
 //                     <input
-//   type="email"
-//   id="email"
-//   name="email"
-//   value={newUser.email}
-//   onChange={handleInputChange}
-//   className={`pl-10 block w-full rounded-md border ${
-//     formErrors.email ? "border-red-300" : "border-gray-300"
-//   } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`} // Adicione text-gray-900 aqui
-//   placeholder="usuario@exemplo.com"
-// />
+//                       type="email"
+//                       id="email"
+//                       name="email"
+//                       value={newUser.email}
+//                       onChange={handleInputChange}
+//                       className={`pl-10 block w-full rounded-md border ${
+//                         formErrors.email ? "border-red-300" : "border-gray-300"
+//                       } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`}
+//                       placeholder="usuario@exemplo.com"
+//                     />
 //                   </div>
 //                   {formErrors.email && <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>}
 //                 </div>
@@ -659,16 +575,16 @@
 //                       <Key className="h-5 w-5 text-gray-400" />
 //                     </div>
 //                     <input
-//   type="password"
-//   id="password"
-//   name="password"
-//   value={newUser.password}
-//   onChange={handleInputChange}
-//   className={`pl-10 block w-full rounded-md border ${
-//     formErrors.password ? "border-red-300" : "border-gray-300"
-//   } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`} // Adicione text-gray-900 aqui
-//   placeholder="••••••••"
-// />
+//                       type="password"
+//                       id="password"
+//                       name="password"
+//                       value={newUser.password}
+//                       onChange={handleInputChange}
+//                       className={`pl-10 block w-full rounded-md border ${
+//                         formErrors.password ? "border-red-300" : "border-gray-300"
+//                       } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`}
+//                       placeholder="••••••••"
+//                     />
 //                   </div>
 //                   {formErrors.password && <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>}
 //                 </div>
@@ -683,16 +599,16 @@
 //                         <UserCircle className="h-5 w-5 text-gray-400" />
 //                       </div>
 //                       <input
-//   type="text"
-//   id="first_name"
-//   name="first_name"
-//   value={newUser.first_name}
-//   onChange={handleInputChange}
-//   className={`pl-10 block w-full rounded-md border ${
-//     formErrors.first_name ? "border-red-300" : "border-gray-300"
-//   } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`} // Adicione text-gray-900 aqui
-//   placeholder="Nome"
-// />
+//                         type="text"
+//                         id="first_name"
+//                         name="first_name"
+//                         value={newUser.first_name}
+//                         onChange={handleInputChange}
+//                         className={`pl-10 block w-full rounded-md border ${
+//                           formErrors.first_name ? "border-red-300" : "border-gray-300"
+//                         } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`}
+//                         placeholder="Nome"
+//                       />
 //                     </div>
 //                     {formErrors.first_name && <p className="mt-1 text-sm text-red-600">{formErrors.first_name}</p>}
 //                   </div>
@@ -702,16 +618,16 @@
 //                       Sobrenome
 //                     </label>
 //                     <input
-//   type="text"
-//   id="last_name"
-//   name="last_name"
-//   value={newUser.last_name}
-//   onChange={handleInputChange}
-//   className={`block w-full rounded-md border ${
-//     formErrors.last_name ? "border-red-300" : "border-gray-300"
-//   } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`} // Adicione text-gray-900 aqui
-//   placeholder="Sobrenome"
-// />
+//                       type="text"
+//                       id="last_name"
+//                       name="last_name"
+//                       value={newUser.last_name}
+//                       onChange={handleInputChange}
+//                       className={`block w-full rounded-md border ${
+//                         formErrors.last_name ? "border-red-300" : "border-gray-300"
+//                       } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`}
+//                       placeholder="Sobrenome"
+//                     />
 //                     {formErrors.last_name && <p className="mt-1 text-sm text-red-600">{formErrors.last_name}</p>}
 //                   </div>
 //                 </div>
@@ -749,44 +665,24 @@
 //       )}
 
 //       {/* Modal de confirmação de exclusão */}
-//       {isDeleteModalOpen && (
-//         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
-//           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-auto">
-//             <div className="p-6">
-//               <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-//                 <Trash2 className="h-6 w-6 text-red-600" />
-//               </div>
-//               <h3 className="text-lg font-medium text-center text-gray-900 mb-2">Confirmar Exclusão</h3>
-//               <p className="text-sm text-gray-500 text-center mb-6">
-//                 Tem certeza que deseja excluir o usuário{" "}
-//                 <span className="font-medium text-gray-900">
-//                   {userToDelete?.first_name} {userToDelete?.last_name}
-//                 </span>
-//                 ? Esta ação não pode ser desfeita.
-//               </p>
-//               <div className="flex justify-center space-x-3">
-//                 <button
-//                   type="button"
-//                   onClick={() => setIsDeleteModalOpen(false)}
-//                   className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
-//                 >
-//                   Cancelar
-//                 </button>
-//                 <button
-//                   type="button"
-//                   onClick={confirmDeleteUser}
-//                   className="px-4 py-2 bg-red-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-//                 >
-//                   Excluir
-//                 </button>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       )}
+//       <ConfirmationModal
+//         isOpen={isDeleteModalOpen}
+//         onClose={() => setIsDeleteModalOpen(false)}
+//         onConfirm={confirmDeleteUser}
+//         title="Confirmar Exclusão"
+//         message={
+//           userToDelete
+//             ? `Tem certeza que deseja excluir o usuário ${userToDelete.first_name} ${userToDelete.last_name}? Esta ação não pode ser desfeita.`
+//             : "Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita."
+//         }
+//         confirmText="Excluir"
+//         cancelText="Cancelar"
+//         type="danger"
+//       />
 //     </div>
 //   )
 // }
+
 
 
 "use client"
@@ -1054,7 +950,7 @@ export default function UserManagement() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Gerenciamento de Usuários</h1>
         <button
