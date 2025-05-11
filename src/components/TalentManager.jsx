@@ -521,8 +521,9 @@ export default function TalentsManager() {
     }
 
     return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
-      <div className="flex max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-col sm:flex-row items-center justify-between mt-6 gap-4 bg-white p-4 rounded-lg shadow-sm">
+      {/* <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4 bg-white p-4 rounded-lg shadow-sm"> */}
         <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start">
           <select
             className="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white text-gray-900"
