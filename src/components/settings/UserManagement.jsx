@@ -890,7 +890,7 @@ export default function UserManagement() {
     }
 
     return (
-      <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4 bg-white p-4 rounded-lg shadow-sm">
         <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start">
           <select
             className="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white text-gray-900"
@@ -950,7 +950,7 @@ export default function UserManagement() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Gerenciamento de Usuários</h1>
         <button
