@@ -38,7 +38,7 @@ export function AuthProvider({ children }) {
 
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.message || "Falha na autenticação")
+        throw new Error(data.message || "Usuário ou senha incorretos")
       }
 
       // Armazenar dados do usuário com nome e sobrenome

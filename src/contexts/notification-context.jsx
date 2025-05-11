@@ -116,7 +116,6 @@ export const NotificationsProvider = ({ children }) => {
         setError(error.message)
         // Evitar mostrar o mesmo erro repetidamente
         if (!error.message.includes("já exibido")) {
-          toast.error(`Erro ao carregar notificações: ${error.message}`)
           error.message += " (já exibido)"
         }
       }
