@@ -8,18 +8,23 @@
 // import TalentsManager from "../components/TalentManager"
 // import { ToastContainer } from "react-toastify"
 // import "react-toastify/dist/ReactToastify.css"
-// import SettingsPage from "../components/settings/SettingsPage"
 // import { UsersProvider } from "../contexts/users-context.jsx"
 // import ProfilePage from "../Pages/ProfilePage.jsx"
 // import Dashboard from "../components/Dashboard.jsx"
+// import SettingsPage from '../components/settings/SettingsPage.jsx'
+// import "react-toastify/dist/ReactToastify.css"
+// import HighlightsPage from "../components/HighlightsPage.jsx"
+// import NotificationsPage from "../components/NotificationsPage.jsx"
 
 // function AuthenticatedApp() {
 //   const { user, logout } = useAuth()
 //   const [currentPage, setCurrentPage] = useState("dashboard")
+//   const [pageParams, setPageParams] = useState({})
 
 //   // Função para navegar entre páginas
-//   const navigateTo = (page) => {
+//   const navigateTo = (page, params = {}) => {
 //     setCurrentPage(page)
+//     setPageParams(params)
 //   }
 
 //   // Renderizar a página atual
@@ -34,12 +39,21 @@
 //             </main>
 //           </div>
 //         )
+//       case "destaques":
+//         return (
+//           <div className="flex flex-col min-h-screen">
+//             <Header onNavigate={navigateTo} activeTab="destaques" />
+//             <main className="flex-grow bg-gray-100">
+//               <HighlightsPage />
+//             </main>
+//           </div>
+//         )
 //       case "configurações":
 //         return (
 //           <div className="flex flex-col min-h-screen">
 //             <Header onNavigate={navigateTo} activeTab="configurações" />
 //             <main className="flex-grow bg-gray-100">
-//               <SettingsPage />
+//               <SettingsPage params={pageParams} />
 //             </main>
 //           </div>
 //         )
@@ -50,6 +64,12 @@
 //             <main className="flex-grow bg-gray-100">
 //               <ProfilePage onBack={() => navigateTo("dashboard")} />
 //             </main>
+//           </div>
+//         )
+//       case "notificações":
+//         return (
+//           <div className="flex flex-col min-h-screen">
+//             <NotificationsPage />
 //           </div>
 //         )
 //       case "dashboard":
@@ -150,16 +170,20 @@ import "react-toastify/dist/ReactToastify.css"
 import { UsersProvider } from "../contexts/users-context.jsx"
 import ProfilePage from "../Pages/ProfilePage.jsx"
 import Dashboard from "../components/Dashboard.jsx"
-import SettingsPage from '../components/settings/SettingsPage.jsx'
+import SettingsPage from "../components/settings/SettingsPage.jsx"
 import "react-toastify/dist/ReactToastify.css"
 import HighlightsPage from "../components/HighlightsPage.jsx"
+import NotificationsPage from "../components/NotificationsPage.jsx"
+
 function AuthenticatedApp() {
   const { user, logout } = useAuth()
   const [currentPage, setCurrentPage] = useState("dashboard")
+  const [pageParams, setPageParams] = useState({})
 
   // Função para navegar entre páginas
-  const navigateTo = (page) => {
+  const navigateTo = (page, params = {}) => {
     setCurrentPage(page)
+    setPageParams(params)
   }
 
   // Renderizar a página atual
@@ -188,7 +212,7 @@ function AuthenticatedApp() {
           <div className="flex flex-col min-h-screen">
             <Header onNavigate={navigateTo} activeTab="configurações" />
             <main className="flex-grow bg-gray-100">
-              <SettingsPage />
+              <SettingsPage params={pageParams} />
             </main>
           </div>
         )
@@ -199,6 +223,12 @@ function AuthenticatedApp() {
             <main className="flex-grow bg-gray-100">
               <ProfilePage onBack={() => navigateTo("dashboard")} />
             </main>
+          </div>
+        )
+      case "notificações":
+        return (
+          <div className="flex flex-col min-h-screen">
+            <NotificationsPage onGoBack={() => navigateTo(pageParams.returnTo || "dashboard")} />
           </div>
         )
       case "dashboard":

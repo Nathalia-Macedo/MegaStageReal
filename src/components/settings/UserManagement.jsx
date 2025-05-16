@@ -18,6 +18,7 @@
 // } from "lucide-react"
 // import { useUsers } from "../../contexts/users-context"
 // import ConfirmationModal from "../ConfirmationModal"
+
 // export default function UserManagement() {
 //   const { users, loading, error, fetchUsers, deleteUser, createUser } = useUsers()
 //   const [searchTerm, setSearchTerm] = useState("")
@@ -50,9 +51,9 @@
 //     if (users.length > 0) {
 //       const filtered = users.filter(
 //         (user) =>
-//           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//           user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//           user.last_name.toLowerCase().includes(searchTerm.toLowerCase()),
+//           user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//           user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//           user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()),
 //       )
 //       setFilteredUsers(filtered)
 
@@ -139,15 +140,28 @@
 //   }
 
 //   const toggleActionMenu = (id) => {
-//     setActionMenuOpen((prev) => ({
-//       ...prev,
-//       [id]: !prev[id],
-//     }))
+//     setActionMenuOpen((prev) => {
+//       const newState = { ...prev }
+//       // Fechar todos os outros menus
+//       Object.keys(newState).forEach((key) => {
+//         if (key !== id.toString()) newState[key] = false
+//       })
+//       // Alternar o estado do menu atual
+//       newState[id] = !prev[id]
+//       return newState
+//     })
 //   }
 
 //   const closeAllActionMenus = () => {
 //     setActionMenuOpen({})
 //   }
+
+//   // Fechar menus quando clicar fora
+//   useEffect(() => {
+//     const handleClickOutside = () => closeAllActionMenus()
+//     document.addEventListener("click", handleClickOutside)
+//     return () => document.removeEventListener("click", handleClickOutside)
+//   }, [])
 
 //   const formatDate = (dateString) => {
 //     if (!dateString) return "N/A"
@@ -201,7 +215,7 @@
 //     }
 
 //     return (
-//       <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+//       <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4 bg-white p-4 rounded-lg shadow-sm">
 //         <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start">
 //           <select
 //             className="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white text-gray-900"
@@ -261,9 +275,9 @@
 //   }
 
 //   return (
-//     <div className="container mx-auto px-4 py-8">
-//       <div className="flex justify-between items-center mb-6">
-//         <h1 className="text-3xl font-bold text-gray-800">Gerenciamento de Usuários</h1>
+//     <div className="w-full">
+//       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+//         <h1 className="text-2xl font-bold text-gray-800">Gerenciamento de Usuários</h1>
 //         <button
 //           onClick={() => setIsAddUserModalOpen(true)}
 //           className="flex items-center px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
@@ -273,9 +287,9 @@
 //         </button>
 //       </div>
 
-//       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-//         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-//           <div className="relative w-full md:w-auto md:min-w-[300px]">
+//       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+//         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+//           <div className="relative w-full sm:max-w-xs">
 //             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 //               <Search className="h-5 w-5 text-gray-400" />
 //             </div>
@@ -288,7 +302,7 @@
 //             />
 //           </div>
 
-//           <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+//           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
 //             <button
 //               onClick={() => fetchUsers()}
 //               className="flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
@@ -420,7 +434,10 @@
 //                           <Edit className="h-5 w-5" />
 //                         </button>
 //                         <button
-//                           onClick={() => handleDeleteUser(user)}
+//                           onClick={(e) => {
+//                             e.stopPropagation()
+//                             handleDeleteUser(user)
+//                           }}
 //                           className="text-red-500 hover:text-red-700"
 //                           aria-label="Excluir usuário"
 //                         >
@@ -469,7 +486,10 @@
 //                     </div>
 //                     <div className="relative">
 //                       <button
-//                         onClick={() => toggleActionMenu(user.id)}
+//                         onClick={(e) => {
+//                           e.stopPropagation()
+//                           toggleActionMenu(user.id)
+//                         }}
 //                         className="p-1.5 rounded-full hover:bg-gray-100"
 //                         aria-label="Ações"
 //                         type="button"
@@ -478,7 +498,10 @@
 //                       </button>
 
 //                       {actionMenuOpen[user.id] && (
-//                         <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+//                         <div
+//                           className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200"
+//                           onClick={(e) => e.stopPropagation()}
+//                         >
 //                           <div className="py-1">
 //                             <button
 //                               onClick={() => {
@@ -633,18 +656,18 @@
 //                 </div>
 //               </div>
 
-//               <div className="mt-6 flex justify-end space-x-3">
+//               <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
 //                 <button
 //                   type="button"
 //                   onClick={() => setIsAddUserModalOpen(false)}
-//                   className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+//                   className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
 //                 >
 //                   Cancelar
 //                 </button>
 //                 <button
 //                   type="submit"
 //                   disabled={isSubmitting}
-//                   className="px-4 py-2 bg-pink-500 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 flex items-center"
+//                   className="w-full sm:w-auto px-4 py-2 bg-pink-500 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 flex items-center justify-center"
 //                 >
 //                   {isSubmitting ? (
 //                     <>
@@ -684,7 +707,6 @@
 // }
 
 
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -704,17 +726,24 @@ import {
   Mail,
   Key,
   UserCircle,
+  Save,
+  ImageIcon,
 } from "lucide-react"
 import { useUsers } from "../../contexts/users-context"
 import ConfirmationModal from "../ConfirmationModal"
+
 export default function UserManagement() {
-  const { users, loading, error, fetchUsers, deleteUser, createUser } = useUsers()
+  const { users, loading, error, fetchUsers, deleteUser, createUser, updateUser } = useUsers()
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredUsers, setFilteredUsers] = useState([])
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false)
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState(null)
+  const [userToEdit, setUserToEdit] = useState(null)
   const [actionMenuOpen, setActionMenuOpen] = useState({})
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [editFormErrors, setEditFormErrors] = useState({})
 
   // Paginação
   const [currentPage, setCurrentPage] = useState(1)
@@ -739,9 +768,9 @@ export default function UserManagement() {
     if (users.length > 0) {
       const filtered = users.filter(
         (user) =>
-          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.last_name.toLowerCase().includes(searchTerm.toLowerCase()),
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()),
       )
       setFilteredUsers(filtered)
 
@@ -794,6 +823,88 @@ export default function UserManagement() {
     }
   }
 
+  const handleEditUser = (user) => {
+    setUserToEdit({
+      id: user.id,
+      email: user.email || "",
+      first_name: user.first_name || "",
+      last_name: user.last_name || "",
+      photo: user.photo || null,
+    })
+    setIsEditUserModalOpen(true)
+  }
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault()
+
+    // Validação
+    const errors = {}
+    if (!userToEdit.email) errors.email = "Email é obrigatório"
+    else if (!/\S+@\S+\.\S+/.test(userToEdit.email)) errors.email = "Email inválido"
+
+    if (!userToEdit.first_name) errors.first_name = "Nome é obrigatório"
+    if (!userToEdit.last_name) errors.last_name = "Sobrenome é obrigatório"
+
+    if (Object.keys(errors).length > 0) {
+      setEditFormErrors(errors)
+      return
+    }
+
+    setIsUpdating(true)
+    setEditFormErrors({})
+
+    try {
+      await updateUser(userToEdit.id, userToEdit)
+      setIsEditUserModalOpen(false)
+      setUserToEdit(null)
+    } catch (error) {
+      // Erro já tratado no contexto
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target
+    setUserToEdit((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+
+    // Limpar erro do campo quando o usuário digitar
+    if (editFormErrors[name]) {
+      setEditFormErrors((prev) => ({
+        ...prev,
+        [name]: null,
+      }))
+    }
+  }
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      try {
+        // Converter para base64
+        const base64 = await convertToBase64(file)
+        setUserToEdit((prev) => ({
+          ...prev,
+          photo: base64,
+        }))
+      } catch (error) {
+        console.error("Erro ao converter imagem:", error)
+      }
+    }
+  }
+
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = (error) => reject(error)
+    })
+  }
+
   const handleDeleteUser = (user) => {
     setUserToDelete(user)
     setIsDeleteModalOpen(true)
@@ -828,15 +939,28 @@ export default function UserManagement() {
   }
 
   const toggleActionMenu = (id) => {
-    setActionMenuOpen((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }))
+    setActionMenuOpen((prev) => {
+      const newState = { ...prev }
+      // Fechar todos os outros menus
+      Object.keys(newState).forEach((key) => {
+        if (key !== id.toString()) newState[key] = false
+      })
+      // Alternar o estado do menu atual
+      newState[id] = !prev[id]
+      return newState
+    })
   }
 
   const closeAllActionMenus = () => {
     setActionMenuOpen({})
   }
+
+  // Fechar menus quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = () => closeAllActionMenus()
+    document.addEventListener("click", handleClickOutside)
+    return () => document.removeEventListener("click", handleClickOutside)
+  }, [])
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A"
@@ -950,9 +1074,9 @@ export default function UserManagement() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Gerenciamento de Usuários</h1>
+    <div className="w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800">Gerenciamento de Usuários</h1>
         <button
           onClick={() => setIsAddUserModalOpen(true)}
           className="flex items-center px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
@@ -962,9 +1086,9 @@ export default function UserManagement() {
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div className="relative w-full md:w-auto md:min-w-[300px]">
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <div className="relative w-full sm:max-w-xs">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
@@ -977,7 +1101,7 @@ export default function UserManagement() {
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               onClick={() => fetchUsers()}
               className="flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
@@ -1081,8 +1205,16 @@ export default function UserManagement() {
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                          <User className="h-5 w-5 text-gray-500" />
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                          {user.photo ? (
+                            <img
+                              src={user.photo || "/placeholder.svg"}
+                              alt={`${user.first_name} ${user.last_name}`}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-5 w-5 text-gray-500" />
+                          )}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
@@ -1100,8 +1232,9 @@ export default function UserManagement() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <button
-                          onClick={() => {
-                            /* Implementar edição */
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEditUser(user)
                           }}
                           className="text-blue-500 hover:text-blue-700"
                           aria-label="Editar usuário"
@@ -1109,7 +1242,10 @@ export default function UserManagement() {
                           <Edit className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={() => handleDeleteUser(user)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteUser(user)
+                          }}
                           className="text-red-500 hover:text-red-700"
                           aria-label="Excluir usuário"
                         >
@@ -1146,8 +1282,16 @@ export default function UserManagement() {
                 <div key={user.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
                   <div className="flex items-center justify-between p-4 border-b border-gray-100">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                        <User className="h-5 w-5 text-gray-500" />
+                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mr-3">
+                        {user.photo ? (
+                          <img
+                            src={user.photo || "/placeholder.svg"}
+                            alt={`${user.first_name} ${user.last_name}`}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <User className="h-5 w-5 text-gray-500" />
+                        )}
                       </div>
                       <div>
                         <h3 className="font-medium text-gray-900">
@@ -1158,7 +1302,10 @@ export default function UserManagement() {
                     </div>
                     <div className="relative">
                       <button
-                        onClick={() => toggleActionMenu(user.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleActionMenu(user.id)
+                        }}
                         className="p-1.5 rounded-full hover:bg-gray-100"
                         aria-label="Ações"
                         type="button"
@@ -1167,11 +1314,14 @@ export default function UserManagement() {
                       </button>
 
                       {actionMenuOpen[user.id] && (
-                        <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                        <div
+                          className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <div className="py-1">
                             <button
                               onClick={() => {
-                                /* Implementar edição */
+                                handleEditUser(user)
                                 toggleActionMenu(user.id)
                               }}
                               className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
@@ -1322,18 +1472,18 @@ export default function UserManagement() {
                 </div>
               </div>
 
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsAddUserModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-pink-500 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 flex items-center"
+                  className="w-full sm:w-auto px-4 py-2 bg-pink-500 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 flex items-center justify-center"
                 >
                   {isSubmitting ? (
                     <>
@@ -1344,6 +1494,159 @@ export default function UserManagement() {
                     <>
                       <Check className="h-4 w-4 mr-2" />
                       Criar Usuário
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para editar usuário */}
+      {isEditUserModalOpen && userToEdit && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-auto">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <Edit className="h-5 w-5 mr-2 text-blue-500" />
+                Editar Usuário
+              </h3>
+              <button
+                onClick={() => setIsEditUserModalOpen(false)}
+                className="text-gray-400 hover:text-gray-500"
+                aria-label="Fechar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateUser} className="p-6">
+              <div className="space-y-4">
+                {/* Foto do usuário */}
+                <div className="flex flex-col items-center mb-4">
+                  <div className="relative mb-3">
+                    <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-gray-300">
+                      {userToEdit.photo ? (
+                        <img
+                          src={userToEdit.photo || "/placeholder.svg"}
+                          alt={`${userToEdit.first_name} ${userToEdit.last_name}`}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-12 w-12 text-gray-500" />
+                      )}
+                    </div>
+                    <label
+                      htmlFor="photo-upload"
+                      className="absolute bottom-0 right-0 bg-pink-500 text-white p-1.5 rounded-full cursor-pointer hover:bg-pink-600 transition-colors"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      <input
+                        type="file"
+                        id="photo-upload"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500">Clique no ícone para alterar a foto</p>
+                </div>
+
+                <div>
+                  <label htmlFor="edit-email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="email"
+                      id="edit-email"
+                      name="email"
+                      value={userToEdit.email}
+                      onChange={handleEditInputChange}
+                      className={`pl-10 block w-full rounded-md border ${
+                        editFormErrors.email ? "border-red-300" : "border-gray-300"
+                      } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`}
+                      placeholder="usuario@exemplo.com"
+                    />
+                  </div>
+                  {editFormErrors.email && <p className="mt-1 text-sm text-red-600">{editFormErrors.email}</p>}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="edit-first_name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <UserCircle className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        id="edit-first_name"
+                        name="first_name"
+                        value={userToEdit.first_name}
+                        onChange={handleEditInputChange}
+                        className={`pl-10 block w-full rounded-md border ${
+                          editFormErrors.first_name ? "border-red-300" : "border-gray-300"
+                        } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`}
+                        placeholder="Nome"
+                      />
+                    </div>
+                    {editFormErrors.first_name && (
+                      <p className="mt-1 text-sm text-red-600">{editFormErrors.first_name}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="edit-last_name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Sobrenome
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-last_name"
+                      name="last_name"
+                      value={userToEdit.last_name}
+                      onChange={handleEditInputChange}
+                      className={`block w-full rounded-md border ${
+                        editFormErrors.last_name ? "border-red-300" : "border-gray-300"
+                      } focus:border-pink-500 focus:ring-pink-500 sm:text-sm p-2.5 text-gray-900`}
+                      placeholder="Sobrenome"
+                    />
+                    {editFormErrors.last_name && (
+                      <p className="mt-1 text-sm text-red-600">{editFormErrors.last_name}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditUserModalOpen(false)}
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-500 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center"
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar Alterações
                     </>
                   )}
                 </button>
