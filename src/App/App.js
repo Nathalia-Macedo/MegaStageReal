@@ -11,7 +11,7 @@
 // import { UsersProvider } from "../contexts/users-context.jsx"
 // import ProfilePage from "../Pages/ProfilePage.jsx"
 // import Dashboard from "../components/Dashboard.jsx"
-// import SettingsPage from '../components/settings/SettingsPage.jsx'
+// import SettingsPage from "../components/settings/SettingsPage.jsx"
 // import "react-toastify/dist/ReactToastify.css"
 // import HighlightsPage from "../components/HighlightsPage.jsx"
 // import NotificationsPage from "../components/NotificationsPage.jsx"
@@ -69,7 +69,7 @@
 //       case "notificações":
 //         return (
 //           <div className="flex flex-col min-h-screen">
-//             <NotificationsPage />
+//             <NotificationsPage onGoBack={() => navigateTo(pageParams.returnTo || "dashboard")} />
 //           </div>
 //         )
 //       case "dashboard":
@@ -153,8 +153,6 @@
 // }
 
 // export default App
-
-
 "use client"
 
 import { NotificationsProvider } from "../contexts/notification-context"
@@ -174,6 +172,9 @@ import SettingsPage from "../components/settings/SettingsPage.jsx"
 import "react-toastify/dist/ReactToastify.css"
 import HighlightsPage from "../components/HighlightsPage.jsx"
 import NotificationsPage from "../components/NotificationsPage.jsx"
+// Adicionar a importação do EditTalentModal
+import EditTalentModal from "../components/EditTalentModal"
+import EditTalentModalWrapper from "../components/EditTalentModalWrapper.jsx"
 
 function AuthenticatedApp() {
   const { user, logout } = useAuth()
@@ -246,7 +247,11 @@ function AuthenticatedApp() {
 
   return (
     <UsersProvider>
-      <TalentProvider>{renderPage()}</TalentProvider>
+      <TalentProvider>
+        {renderPage()}
+        <EditTalentModalWrapper/>
+        <EditTalentModal />
+      </TalentProvider>
     </UsersProvider>
   )
 }
