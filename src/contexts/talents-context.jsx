@@ -19,6 +19,9 @@ export const TalentProvider = ({ children }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingTalentId, setEditingTalentId] = useState(null)
 
+  // Adicionar estado para controlar o carregamento de talentos individuais
+  const [loadingTalentId, setLoadingTalentId] = useState(null)
+
   const fetchTalents = async () => {
     setLoading(true)
     setError(null)
@@ -52,6 +55,7 @@ export const TalentProvider = ({ children }) => {
     }
   }
 
+  // Simplificar a função openModal para evitar múltiplas renderizações
   const openModal = (talent) => {
     setSelectedTalent(talent)
     setIsModalOpen(true)
@@ -59,7 +63,10 @@ export const TalentProvider = ({ children }) => {
 
   const closeModal = () => {
     setIsModalOpen(false)
-    setSelectedTalent(null)
+    // Aguardar a animação de fechamento antes de limpar o talento selecionado
+    setTimeout(() => {
+      setSelectedTalent(null)
+    }, 300)
   }
 
   // Adicionar função para abrir o modal de edição
@@ -74,8 +81,9 @@ export const TalentProvider = ({ children }) => {
     setEditingTalentId(null)
   }
 
+  // Modificar fetchTalentById para usar o estado de carregamento específico
   const fetchTalentById = async (id) => {
-    setLoading(true)
+    setLoadingTalentId(id)
     setError(null)
 
     try {
@@ -101,7 +109,7 @@ export const TalentProvider = ({ children }) => {
       setError(error.message)
       throw error
     } finally {
-      setLoading(false)
+      setLoadingTalentId(null)
     }
   }
 
@@ -299,10 +307,54 @@ export const TalentProvider = ({ children }) => {
     }
   }
 
-  // Adicionar as novas funções ao objeto value
+  // Adicionar a função importFromManager ao contexto, logo após a função toggleHighlight
+
+  const importFromManager = async (incremental) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      if (!token) {
+        throw new Error("Token de autenticação não encontrado")
+      }
+
+      const response = await fetch(`https://megastage.onrender.com/api/v1/integration/${incremental}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro ao importar talentos do Manager: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      // Atualizar a lista de talentos após a importação
+      await fetchTalents()
+
+      return {
+        success: true,
+        message: incremental
+          ? `${data.imported || 0} novos talentos importados com sucesso!`
+          : `${data.imported || 0} talentos importados com sucesso!`,
+        count: data.imported || 0,
+      }
+    } catch (error) {
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Adicionar a função importFromManager ao objeto value
   const value = {
     talents,
     loading,
+    loadingTalentId,
     error,
     selectedTalent,
     isModalOpen,
@@ -314,6 +366,7 @@ export const TalentProvider = ({ children }) => {
     updateTalent,
     deleteTalent,
     toggleHighlight,
+    importFromManager,
     isEditModalOpen,
     editingTalentId,
     openEditModal,

@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { toast } from "react-toastify"
 import { useNotifications } from "../contexts/notification-context"
@@ -371,14 +369,17 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Nome */}
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center">
-            Nome <span className="text-red-500 ml-1">*</span>
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5 flex items-center"
+          >
+            Nome <span className="text-pink-500 dark:text-pink-400 ml-1">*</span>
             <div
               className="relative ml-1.5"
               onMouseEnter={() => handleShowTooltip("name")}
               onMouseLeave={() => handleHideTooltip("name")}
             >
-              <HelpCircle className="h-3.5 w-3.5 text-gray-400" />
+              <HelpCircle className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
               {showTooltip.name && (
                 <div className="absolute left-full ml-2 top-0 w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg z-10">
                   Nome completo do talento como será exibido no sistema
@@ -388,7 +389,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
           </label>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <User className="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+              <User className="h-4 w-4 text-gray-400 dark:text-gray-500 group-focus-within:text-pink-500 dark:group-focus-within:text-pink-400 transition-colors" />
             </div>
             <input
               type="text"
@@ -398,9 +399,9 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
               onChange={handleInputChange}
               className={`pl-10 block w-full rounded-lg border ${
                 formErrors.name
-                  ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:ring-pink-500 focus:border-pink-500"
-              } shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm p-3 bg-white text-gray-900 transition-all`}
+                  ? "border-red-300 dark:border-red-500/50 focus:ring-red-500 focus:border-red-500 dark:bg-red-900/10"
+                  : "border-gray-200 dark:border-gray-700 focus:ring-pink-500 focus:border-pink-500 dark:focus:ring-pink-400 dark:focus:border-pink-400"
+              } shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all`}
               placeholder="Nome completo"
             />
             <AnimatePresence>
@@ -409,7 +410,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-1.5 text-sm text-red-600 flex items-center"
+                  className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center"
                 >
                   <AlertCircle className="h-3.5 w-3.5 mr-1" />
                   {formErrors.name}
@@ -421,14 +422,17 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
 
         {/* Categoria */}
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center">
-            Categoria <span className="text-red-500 ml-1">*</span>
+          <label
+            htmlFor="category"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5 flex items-center"
+          >
+            Categoria <span className="text-pink-500 dark:text-pink-400 ml-1">*</span>
             <div
               className="relative ml-1.5"
               onMouseEnter={() => handleShowTooltip("category")}
               onMouseLeave={() => handleHideTooltip("category")}
             >
-              <HelpCircle className="h-3.5 w-3.5 text-gray-400" />
+              <HelpCircle className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
               {showTooltip.category && (
                 <div className="absolute left-full ml-2 top-0 w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg z-10">
                   Categoria principal do talento
@@ -444,9 +448,9 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
               onChange={handleInputChange}
               className={`block w-full rounded-lg border ${
                 formErrors.category
-                  ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:ring-pink-500 focus:border-pink-500"
-              } shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm p-3 bg-white text-gray-900 appearance-none pr-10 transition-all`}
+                  ? "border-red-300 dark:border-red-500/50 focus:ring-red-500 focus:border-red-500 dark:bg-red-900/10"
+                  : "border-gray-200 dark:border-gray-700 focus:ring-pink-500 focus:border-pink-500 dark:focus:ring-pink-400 dark:focus:border-pink-400"
+              } shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white appearance-none pr-10 transition-all`}
             >
               <option value="">Selecione uma categoria</option>
               <option value="Ator">Ator</option>
@@ -456,7 +460,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
               <option value="Dançarino">Dançarino</option>
             </select>
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <ChevronDown className="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+              <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500 group-focus-within:text-pink-500 dark:group-focus-within:text-pink-400 transition-colors" />
             </div>
             <AnimatePresence>
               {formErrors.category && (
@@ -464,7 +468,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-1.5 text-sm text-red-600 flex items-center"
+                  className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center"
                 >
                   <AlertCircle className="h-3.5 w-3.5 mr-1" />
                   {formErrors.category}
@@ -478,14 +482,17 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Tipo de Talento */}
         <div>
-          <label htmlFor="tipo_talento" className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center">
+          <label
+            htmlFor="tipo_talento"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5 flex items-center"
+          >
             Tipo de Talento
             <div
               className="relative ml-1.5"
               onMouseEnter={() => handleShowTooltip("tipo_talento")}
               onMouseLeave={() => handleHideTooltip("tipo_talento")}
             >
-              <HelpCircle className="h-3.5 w-3.5 text-gray-400" />
+              <HelpCircle className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
               {showTooltip.tipo_talento && (
                 <div className="absolute left-full ml-2 top-0 w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg z-10">
                   Especificação adicional do tipo de talento
@@ -495,7 +502,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
           </label>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <Briefcase className="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+              <Briefcase className="h-4 w-4 text-gray-400 dark:text-gray-500 group-focus-within:text-pink-500 dark:group-focus-within:text-pink-400 transition-colors" />
             </div>
             <input
               type="text"
@@ -503,7 +510,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
               name="tipo_talento"
               value={formData.tipo_talento}
               onChange={handleInputChange}
-              className="pl-10 block w-full rounded-lg border border-gray-200 shadow-sm focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 focus:border-pink-500 sm:text-sm p-3 bg-white text-gray-900 transition-all"
+              className="pl-10 block w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-opacity-50 focus:border-pink-500 dark:focus:border-pink-400 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
               placeholder="Tipo de talento"
             />
           </div>
@@ -511,14 +518,17 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
 
         {/* Data de Nascimento */}
         <div>
-          <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center">
-            Data de Nascimento <span className="text-red-500 ml-1">*</span>
+          <label
+            htmlFor="birth_date"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5 flex items-center"
+          >
+            Data de Nascimento <span className="text-pink-500 dark:text-pink-400 ml-1">*</span>
             <div
               className="relative ml-1.5"
               onMouseEnter={() => handleShowTooltip("birth_date")}
               onMouseLeave={() => handleHideTooltip("birth_date")}
             >
-              <HelpCircle className="h-3.5 w-3.5 text-gray-400" />
+              <HelpCircle className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
               {showTooltip.birth_date && (
                 <div className="absolute left-full ml-2 top-0 w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg z-10">
                   Data de nascimento para cálculo de idade
@@ -528,7 +538,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
           </label>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <Calendar className="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+              <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500 group-focus-within:text-pink-500 dark:group-focus-within:text-pink-400 transition-colors" />
             </div>
             <input
               type="date"
@@ -538,9 +548,9 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
               onChange={handleInputChange}
               className={`pl-10 block w-full rounded-lg border ${
                 formErrors.birth_date
-                  ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                  : "border-gray-200 focus:ring-pink-500 focus:border-pink-500"
-              } shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm p-3 bg-white text-gray-900 transition-all`}
+                  ? "border-red-300 dark:border-red-500/50 focus:ring-red-500 focus:border-red-500 dark:bg-red-900/10"
+                  : "border-gray-200 dark:border-gray-700 focus:ring-pink-500 focus:border-pink-500 dark:focus:ring-pink-400 dark:focus:border-pink-400"
+              } shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all`}
             />
             <AnimatePresence>
               {formErrors.birth_date && (
@@ -548,7 +558,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-1.5 text-sm text-red-600 flex items-center"
+                  className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center"
                 >
                   <AlertCircle className="h-3.5 w-3.5 mr-1" />
                   {formErrors.birth_date}
@@ -561,14 +571,17 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
 
       {/* Instagram */}
       <div>
-        <label htmlFor="instagram" className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center">
+        <label
+          htmlFor="instagram"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5 flex items-center"
+        >
           Instagram
           <div
             className="relative ml-1.5"
             onMouseEnter={() => handleShowTooltip("instagram")}
             onMouseLeave={() => handleHideTooltip("instagram")}
           >
-            <HelpCircle className="h-3.5 w-3.5 text-gray-400" />
+            <HelpCircle className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
             {showTooltip.instagram && (
               <div className="absolute left-full ml-2 top-0 w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg z-10">
                 Perfil do Instagram (deve começar com @)
@@ -578,7 +591,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
         </label>
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-            <Instagram className="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+            <Instagram className="h-4 w-4 text-gray-400 dark:text-gray-500 group-focus-within:text-pink-500 dark:group-focus-within:text-pink-400 transition-colors" />
           </div>
           <input
             type="text"
@@ -588,9 +601,9 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
             onChange={handleInputChange}
             className={`pl-10 block w-full rounded-lg border ${
               formErrors.instagram
-                ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                : "border-gray-200 focus:ring-pink-500 focus:border-pink-500"
-            } shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm p-3 bg-white text-gray-900 transition-all`}
+                ? "border-red-300 dark:border-red-500/50 focus:ring-red-500 focus:border-red-500 dark:bg-red-900/10"
+                : "border-gray-200 dark:border-gray-700 focus:ring-pink-500 focus:border-pink-500 dark:focus:ring-pink-400 dark:focus:border-pink-400"
+            } shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all`}
             placeholder="@usuario"
           />
           <AnimatePresence>
@@ -599,7 +612,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mt-1.5 text-sm text-red-600 flex items-center"
+                className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center"
               >
                 <AlertCircle className="h-3.5 w-3.5 mr-1" />
                 {formErrors.instagram}
@@ -610,25 +623,33 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
       </div>
 
       {/* Imagem de Capa */}
-      <div className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+      <motion.div
+        className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/10 dark:to-purple-900/10 rounded-xl p-5 border border-pink-100 dark:border-pink-800/30"
+        whileHover={{ y: -2 }}
+      >
         <div className="flex items-center justify-between mb-3">
-          <label htmlFor="cover" className="block text-sm font-medium text-gray-700 flex items-center">
-            <Camera className="h-4 w-4 mr-1.5 text-pink-500" />
+          <label
+            htmlFor="cover"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center"
+          >
+            <Camera className="h-4 w-4 mr-1.5 text-pink-500 dark:text-pink-400" />
             Imagem de Perfil
           </label>
-          <button
+          <motion.button
             type="button"
             onClick={handleImageUpload}
-            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md text-pink-700 bg-pink-50 hover:bg-pink-100 transition-colors"
+            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md text-pink-700 dark:text-pink-300 bg-pink-50 dark:bg-pink-900/30 hover:bg-pink-100 dark:hover:bg-pink-800/40 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <Upload className="h-3.5 w-3.5 mr-1" />
             Upload
-          </button>
+          </motion.button>
         </div>
 
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-            <ImageIcon className="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+            <ImageIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 group-focus-within:text-pink-500 dark:group-focus-within:text-pink-400 transition-colors" />
           </div>
           <input
             type="text"
@@ -636,7 +657,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
             name="cover"
             value={formData.cover || ""}
             onChange={handleInputChange}
-            className="pl-10 block w-full rounded-lg border border-gray-200 shadow-sm focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 focus:border-pink-500 sm:text-sm p-3 bg-white text-gray-900 transition-all"
+            className="pl-10 block w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-opacity-50 focus:border-pink-500 dark:focus:border-pink-400 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
             placeholder="https://exemplo.com/imagem.jpg"
           />
         </div>
@@ -644,10 +665,11 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
         {/* Prévia da imagem */}
         {formData.cover && (
           <div className="mt-4">
-            <div
-              className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden group cursor-pointer"
+            <motion.div
+              className="relative w-full h-64 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden group cursor-pointer shadow-md"
               onMouseEnter={() => setImagePreviewHover(true)}
               onMouseLeave={() => setImagePreviewHover(false)}
+              whileHover={{ scale: 1.02 }}
             >
               <img
                 src={formData.cover || "/placeholder.svg"}
@@ -664,39 +686,45 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+                    className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/30 flex items-center justify-center"
                   >
-                    <div className="text-white text-sm font-medium">Visualizar imagem</div>
+                    <div className="text-white text-sm font-medium px-4 py-2 bg-black/40 backdrop-blur-sm rounded-lg">
+                      <Camera className="h-4 w-4 inline-block mr-2" />
+                      Visualizar imagem
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-            <p className="mt-2 text-xs text-gray-500 italic">
+            </motion.div>
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 italic">
               Esta imagem será exibida no perfil do talento e nas listagens
             </p>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   )
 
   const renderCharacteristicsSection = () => (
     <div className={`space-y-6 ${activeSection !== "characteristics" ? "hidden" : ""}`}>
-      <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-5 border border-gray-100 shadow-sm">
-        <h4 className="text-sm font-medium text-gray-700 mb-4 pb-2 border-b border-gray-100 flex items-center">
-          <User className="h-4 w-4 mr-2 text-pink-500" />
+      <motion.div
+        className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/10 dark:to-purple-900/10 rounded-xl p-5 border border-pink-100 dark:border-pink-800/30 shadow-sm"
+        whileHover={{ y: -2 }}
+      >
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-4 pb-2 border-b border-gray-100 dark:border-gray-700 flex items-center">
+          <User className="h-4 w-4 mr-2 text-pink-500 dark:text-pink-400" />
           Características Físicas
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Altura */}
           <div>
-            <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="height" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
               Altura
             </label>
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Ruler className="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+                <Ruler className="h-4 w-4 text-gray-400 dark:text-gray-500 group-focus-within:text-pink-500 dark:group-focus-within:text-pink-400 transition-colors" />
               </div>
               <input
                 type="text"
@@ -704,7 +732,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                 name="height"
                 value={formData.height}
                 onChange={handleInputChange}
-                className="pl-10 block w-full rounded-lg border border-gray-200 shadow-sm focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 focus:border-pink-500 sm:text-sm p-3 bg-white text-gray-900 transition-all"
+                className="pl-10 block w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-opacity-50 focus:border-pink-500 dark:focus:border-pink-400 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
                 placeholder="170 cm"
               />
             </div>
@@ -712,12 +740,12 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
 
           {/* Cor dos Olhos */}
           <div>
-            <label htmlFor="eye_color" className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="eye_color" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
               Cor dos Olhos
             </label>
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Eye className="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+                <Eye className="h-4 w-4 text-gray-400 dark:text-gray-500 group-focus-within:text-pink-500 dark:group-focus-within:text-pink-400 transition-colors" />
               </div>
               <input
                 type="text"
@@ -725,7 +753,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                 name="eye_color"
                 value={formData.eye_color}
                 onChange={handleInputChange}
-                className="pl-10 block w-full rounded-lg border border-gray-200 shadow-sm focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 focus:border-pink-500 sm:text-sm p-3 bg-white text-gray-900 transition-all"
+                className="pl-10 block w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-opacity-50 focus:border-pink-500 dark:focus:border-pink-400 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
                 placeholder="Castanhos"
               />
             </div>
@@ -733,12 +761,12 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
 
           {/* Cor do Cabelo */}
           <div>
-            <label htmlFor="hair_color" className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="hair_color" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
               Cor do Cabelo
             </label>
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Palette className="h-4 w-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+                <Palette className="h-4 w-4 text-gray-400 dark:text-gray-500 group-focus-within:text-pink-500 dark:group-focus-within:text-pink-400 transition-colors" />
               </div>
               <input
                 type="text"
@@ -746,22 +774,25 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                 name="hair_color"
                 value={formData.hair_color}
                 onChange={handleInputChange}
-                className="pl-10 block w-full rounded-lg border border-gray-200 shadow-sm focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 focus:border-pink-500 sm:text-sm p-3 bg-white text-gray-900 transition-all"
+                className="pl-10 block w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-opacity-50 focus:border-pink-500 dark:focus:border-pink-400 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
                 placeholder="Castanho"
               />
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Habilidades Musicais */}
-      <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-5 border border-gray-100 shadow-sm">
-        <h4 className="text-sm font-medium text-gray-700 mb-4 pb-2 border-b border-gray-100 flex items-center">
-          <Music className="h-4 w-4 mr-2 text-pink-500" />
+      <motion.div
+        className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/10 dark:to-purple-900/10 rounded-xl p-5 border border-pink-100 dark:border-pink-800/30 shadow-sm"
+        whileHover={{ y: -2 }}
+      >
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-4 pb-2 border-b border-gray-100 dark:border-gray-700 flex items-center">
+          <Music className="h-4 w-4 mr-2 text-pink-500 dark:text-pink-400" />
           Habilidades Musicais
         </h4>
 
-        <div className="flex items-center mb-4 bg-white p-3 rounded-lg border border-gray-100 hover:border-pink-200 transition-colors">
+        <div className="flex items-center mb-4 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-700 transition-colors">
           <input
             type="checkbox"
             id="can_sing"
@@ -770,14 +801,14 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
             onChange={handleInputChange}
             className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
           />
-          <label htmlFor="can_sing" className="ml-2 block text-sm text-gray-700 flex items-center">
-            <Mic className="h-4 w-4 mr-1.5 text-pink-500" />
+          <label htmlFor="can_sing" className="ml-2 block text-sm text-gray-700 dark:text-gray-200 flex items-center">
+            <Mic className="h-4 w-4 mr-1.5 text-pink-500 dark:text-pink-400" />
             Canta
           </label>
         </div>
 
         <div>
-          <label htmlFor="new-instrument" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="new-instrument" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Instrumentos
           </label>
           <div className="flex">
@@ -786,7 +817,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
               id="new-instrument"
               value={newInstrument}
               onChange={(e) => setNewInstrument(e.target.value)}
-              className="block w-full rounded-l-lg border border-gray-200 shadow-sm focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 focus:border-pink-500 sm:text-sm p-3 bg-white text-gray-900 transition-all"
+              className="block w-full rounded-l-lg border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-opacity-50 focus:border-pink-500 dark:focus:border-pink-400 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
               placeholder="Adicionar instrumento"
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
@@ -795,17 +826,19 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                 }
               }}
             />
-            <button
+            <motion.button
               type="button"
               onClick={addInstrument}
-              className="px-4 py-3 bg-pink-500 text-white rounded-r-lg hover:bg-pink-600 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+              className="px-4 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-r-lg hover:from-pink-600 hover:to-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-offset-2"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               <Plus className="h-5 w-5" />
-            </button>
+            </motion.button>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {formData.instruments.length === 0 ? (
-              <p className="text-sm text-gray-500 italic">Nenhum instrumento adicionado</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 italic">Nenhum instrumento adicionado</p>
             ) : (
               formData.instruments.map((instrument, index) => (
                 <motion.div
@@ -813,14 +846,14 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className="flex items-center bg-white px-3 py-1.5 rounded-full text-sm text-gray-700 border border-gray-200 shadow-sm hover:shadow-md hover:border-pink-200 transition-all"
+                  className="flex items-center bg-white dark:bg-gray-800 px-3 py-1.5 rounded-full text-sm text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-pink-200 dark:hover:border-pink-700 transition-all"
                 >
-                  <Music className="h-3.5 w-3.5 mr-1.5 text-pink-500" />
+                  <Music className="h-3.5 w-3.5 mr-1.5 text-pink-500 dark:text-pink-400" />
                   {instrument}
                   <button
                     type="button"
                     onClick={() => removeInstrument(index)}
-                    className="ml-1.5 text-gray-400 hover:text-red-500 p-0.5 rounded-full hover:bg-red-50 transition-colors"
+                    className="ml-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 p-0.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -829,12 +862,15 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Idiomas */}
-      <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-5 border border-gray-100 shadow-sm">
-        <h4 className="text-sm font-medium text-gray-700 mb-4 pb-2 border-b border-gray-100 flex items-center">
-          <Languages className="h-4 w-4 mr-2 text-pink-500" />
+      <motion.div
+        className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/10 dark:to-purple-900/10 rounded-xl p-5 border border-pink-100 dark:border-pink-800/30 shadow-sm"
+        whileHover={{ y: -2 }}
+      >
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-4 pb-2 border-b border-gray-100 dark:border-gray-700 flex items-center">
+          <Languages className="h-4 w-4 mr-2 text-pink-500 dark:text-pink-400" />
           Idiomas
         </h4>
         <div className="flex">
@@ -843,7 +879,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
             id="new-language"
             value={newLanguage}
             onChange={(e) => setNewLanguage(e.target.value)}
-            className="block w-full rounded-l-lg border border-gray-200 shadow-sm focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 focus:border-pink-500 sm:text-sm p-3 bg-white text-gray-900 transition-all"
+            className="block w-full rounded-l-lg border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-opacity-50 focus:border-pink-500 dark:focus:border-pink-400 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
             placeholder="Adicionar idioma"
             onKeyPress={(e) => {
               if (e.key === "Enter") {
@@ -852,17 +888,19 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
               }
             }}
           />
-          <button
+          <motion.button
             type="button"
             onClick={addLanguage}
-            className="px-4 py-3 bg-pink-500 text-white rounded-r-lg hover:bg-pink-600 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
+            className="px-4 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-r-lg hover:from-pink-600 hover:to-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-offset-2"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <Plus className="h-5 w-5" />
-          </button>
+          </motion.button>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {formData.languages.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">Nenhum idioma adicionado</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 italic">Nenhum idioma adicionado</p>
           ) : (
             formData.languages.map((language, index) => (
               <motion.div
@@ -870,14 +908,14 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="flex items-center bg-white px-3 py-1.5 rounded-full text-sm text-gray-700 border border-gray-200 shadow-sm hover:shadow-md hover:border-pink-200 transition-all"
+                className="flex items-center bg-white dark:bg-gray-800 px-3 py-1.5 rounded-full text-sm text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-pink-200 dark:hover:border-pink-700 transition-all"
               >
-                <Globe className="h-3.5 w-3.5 mr-1.5 text-pink-500" />
+                <Globe className="h-3.5 w-3.5 mr-1.5 text-pink-500 dark:text-pink-400" />
                 {language}
                 <button
                   type="button"
                   onClick={() => removeLanguage(index)}
-                  className="ml-1.5 text-gray-400 hover:text-red-500 p-0.5 rounded-full hover:bg-red-50 transition-colors"
+                  className="ml-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 p-0.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -885,53 +923,66 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
             ))
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 
   const renderStatusSection = () => (
     <div className={`space-y-6 ${activeSection !== "status" ? "hidden" : ""}`}>
-      <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-5 border border-gray-100 shadow-sm">
-        <h4 className="text-sm uppercase tracking-wider text-gray-500 font-medium mb-4 pb-2 border-b border-gray-100 flex items-center">
-          <FileText className="h-4 w-4 mr-2 text-pink-500" />
+      <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 shadow-md">
+        <h4 className="text-base uppercase tracking-wider text-pink-400 font-medium mb-5 pb-2 border-b border-gray-800 flex items-center">
+          <FileText className="h-5 w-5 mr-2 text-pink-400" />
           Status do Talento
         </h4>
 
         <div className="space-y-4">
-          <div className="flex items-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md hover:border-green-200 transition-all">
-            <input
-              type="checkbox"
-              id="ativo"
-              name="ativo"
-              checked={formData.ativo}
-              onChange={handleInputChange}
-              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-            />
-            <label htmlFor="ativo" className="ml-2 block text-sm text-gray-700 flex items-center">
-              <Check className="h-4 w-4 mr-1.5 text-green-500" />
-              <span className="font-medium">Ativo no sistema</span>
-              <span className="ml-2 text-xs text-gray-500">
-                (Talentos inativos não aparecem nas listagens públicas)
-              </span>
-            </label>
+          {/* Ativo no sistema */}
+          <div className="bg-gray-800/70 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+            <div className="flex items-center">
+              <div className="flex items-center justify-center h-6 w-6 rounded bg-gray-700 mr-3">
+                <input
+                  type="checkbox"
+                  id="ativo"
+                  name="ativo"
+                  checked={formData.ativo}
+                  onChange={handleInputChange}
+                  className="sr-only peer"
+                />
+                <Check className={`h-4 w-4 text-green-400 ${!formData.ativo && "opacity-0"}`} />
+              </div>
+              <label htmlFor="ativo" className="flex items-center cursor-pointer">
+                <span className="text-white font-medium">Ativo no sistema</span>
+                <span className="ml-2 text-sm text-gray-400">
+                  (Talentos inativos não aparecem nas listagens públicas)
+                </span>
+              </label>
+            </div>
           </div>
 
-          <div className="flex items-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md hover:border-amber-200 transition-all">
-            <input
-              type="checkbox"
-              id="disponivel"
-              name="disponivel"
-              checked={formData.disponivel}
-              onChange={handleInputChange}
-              className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
-            />
-            <label htmlFor="disponivel" className="ml-2 block text-sm text-gray-700 flex items-center">
-              <Clock className="h-4 w-4 mr-1.5 text-amber-500" />
-              <span className="font-medium">Disponível para trabalhos</span>
-              <span className="ml-2 text-xs text-gray-500">(Indica se o talento está disponível para contratação)</span>
-            </label>
+          {/* Disponível para trabalhos */}
+          <div className="bg-gray-800/70 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+            <div className="flex items-center">
+              <div className="flex items-center justify-center h-6 w-6 rounded bg-gray-700 mr-3">
+                <input
+                  type="checkbox"
+                  id="disponivel"
+                  name="disponivel"
+                  checked={formData.disponivel}
+                  onChange={handleInputChange}
+                  className="sr-only peer"
+                />
+                <Clock className={`h-4 w-4 text-amber-400 ${!formData.disponivel && "opacity-0"}`} />
+              </div>
+              <label htmlFor="disponivel" className="flex items-center cursor-pointer">
+                <span className="text-white font-medium">Disponível para trabalhos</span>
+                <span className="ml-2 text-sm text-gray-400">
+                  (Indica se o talento está disponível para contratação)
+                </span>
+              </label>
+            </div>
           </div>
 
+          {/* Seção de data de disponibilidade */}
           <AnimatePresence>
             {!formData.disponivel && (
               <motion.div
@@ -939,45 +990,54 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
-                className="ml-7 mt-2 p-4 bg-amber-50 rounded-lg border border-amber-100 shadow-sm"
+                className="ml-9 mt-1"
               >
-                <label htmlFor="data_disponibilidade" className="block text-sm font-medium text-amber-800 mb-2">
-                  Disponível a partir de:
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Calendar className="h-4 w-4 text-amber-500" />
+                <div className="bg-gray-700/50 rounded-lg p-4 border border-gray-600">
+                  <label htmlFor="data_disponibilidade" className="block text-amber-300 font-medium mb-2">
+                    Disponível a partir de:
+                  </label>
+                  <div className="relative">
+                    <div className="flex items-center bg-gray-800 border border-gray-600 rounded-lg overflow-hidden">
+                      <div className="flex items-center justify-center pl-4 pr-2">
+                        <Calendar className="h-5 w-5 text-amber-400 flex-shrink-0" />
+                      </div>
+                      <input
+                        type="date"
+                        id="data_disponibilidade"
+                        name="data_disponibilidade"
+                        value={formData.data_disponibilidade}
+                        onChange={handleInputChange}
+                        className="block w-full py-3 px-2 bg-gray-800 text-white border-0 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 focus:outline-none"
+                      />
+                    </div>
+                    <p className="mt-2 text-xs text-amber-300/80">
+                      Esta data será exibida para indicar quando o talento estará disponível novamente.
+                    </p>
                   </div>
-                  <input
-                    type="date"
-                    id="data_disponibilidade"
-                    name="data_disponibilidade"
-                    value={formData.data_disponibilidade}
-                    onChange={handleInputChange}
-                    className="pl-10 block w-full rounded-lg border border-amber-200 shadow-sm focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 focus:border-amber-500 sm:text-sm p-3 bg-white text-gray-900 transition-all"
-                  />
-                  <p className="mt-2 text-xs text-amber-700">
-                    Esta data será exibida para indicar quando o talento estará disponível novamente.
-                  </p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div className="flex items-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md hover:border-yellow-200 transition-all">
-            <input
-              type="checkbox"
-              id="destaque"
-              name="destaque"
-              checked={formData.destaque}
-              onChange={handleInputChange}
-              className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
-            />
-            <label htmlFor="destaque" className="ml-2 block text-sm text-gray-700 flex items-center">
-              <Sparkles className="h-4 w-4 mr-1.5 text-yellow-500" />
-              <span className="font-medium">Destacar talento</span>
-              <span className="ml-2 text-xs text-gray-500">(Talentos destacados aparecem em seções especiais)</span>
-            </label>
+          {/* Destacar talento */}
+          <div className="bg-gray-800/70 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
+            <div className="flex items-center">
+              <div className="flex items-center justify-center h-6 w-6 rounded bg-gray-700 mr-3">
+                <input
+                  type="checkbox"
+                  id="destaque"
+                  name="destaque"
+                  checked={formData.destaque}
+                  onChange={handleInputChange}
+                  className="sr-only peer"
+                />
+                <Sparkles className={`h-4 w-4 text-yellow-400 ${!formData.destaque && "opacity-0"}`} />
+              </div>
+              <label htmlFor="destaque" className="flex items-center cursor-pointer">
+                <span className="text-white font-medium">Destacar talento</span>
+                <span className="ml-2 text-sm text-gray-400">(Talentos destacados aparecem em seções especiais)</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -1000,15 +1060,19 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: "spring", damping: 30, stiffness: 400 }}
-            className="relative w-full max-w-4xl bg-white rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] max-h-[90vh]"
+            className="relative w-full max-w-4xl bg-gray-900 rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-h-[90vh]"
           >
-            {/* Cabeçalho */}
-            <div className="bg-gradient-to-r from-pink-600 to-pink-500 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-              <h2 className="text-xl font-bold text-white flex items-center">
-                <Edit className="h-5 w-5 mr-2" />
+            {/* Cabeçalho com gradiente */}
+            <div className="bg-gray-900 bg-gradient-to-r from-purple-900/50 to-pink-900/50 px-6 py-5 flex justify-between items-center sticky top-0 z-10 relative border-b border-gray-800">
+              {/* Elementos de design no background */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/5 rounded-full translate-y-1/2 -translate-x-1/3 blur-xl"></div>
+
+              <h2 className="text-xl font-bold text-white flex items-center relative z-10">
+                <Edit className="h-5 w-5 mr-2 text-pink-400" />
                 Editar Talento
               </h2>
-              <button
+              <motion.button
                 onClick={() => {
                   if (formTouched) {
                     if (window.confirm("Há alterações não salvas. Deseja realmente sair?")) {
@@ -1018,11 +1082,13 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                     onClose()
                   }
                 }}
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-all focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 relative z-10"
                 aria-label="Fechar"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
               >
                 <X className="h-5 w-5" />
-              </button>
+              </motion.button>
             </div>
 
             {/* Conteúdo com scroll */}
@@ -1033,72 +1099,82 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
                   >
-                    <Loader2 className="h-12 w-12 text-pink-500" />
+                    <Loader2 className="h-12 w-12 text-pink-500 dark:text-pink-400" />
                   </motion.div>
-                  <p className="mt-4 text-gray-600 font-medium">Carregando informações do talento...</p>
+                  <p className="mt-4 text-gray-600 dark:text-gray-300 font-medium">
+                    Carregando informações do talento...
+                  </p>
                 </div>
               ) : error ? (
                 <div className="p-6">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4"
+                    className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-4"
                   >
                     <p className="flex items-center">
                       <AlertCircle className="h-5 w-5 mr-2" />
                       {error}
                     </p>
                     <div className="mt-4 flex justify-center">
-                      <button
+                      <motion.button
                         onClick={onClose}
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
                         Fechar
-                      </button>
+                      </motion.button>
                     </div>
                   </motion.div>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit}>
-                  <div className="flex border-b border-gray-200 overflow-x-auto scrollbar-hide">
-                    <button
+                  <div className="flex border-b border-gray-800 overflow-x-auto scrollbar-hide bg-gray-900">
+                    <motion.button
                       type="button"
                       onClick={() => setActiveSection("basic")}
                       className={`flex items-center px-6 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
                         activeSection === "basic"
-                          ? "text-pink-600 border-b-2 border-pink-500"
-                          : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                          ? "text-pink-400 border-b-2 border-pink-500"
+                          : "text-gray-400 hover:text-gray-300 hover:bg-gray-800"
                       }`}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ y: 0 }}
                     >
-                      <User className={`h-4 w-4 mr-2 ${activeSection === "basic" ? "text-pink-500" : ""}`} />
+                      <User className={`h-4 w-4 mr-2 ${activeSection === "basic" ? "text-pink-400" : ""}`} />
                       Informações Básicas
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       type="button"
                       onClick={() => setActiveSection("characteristics")}
                       className={`flex items-center px-6 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
                         activeSection === "characteristics"
-                          ? "text-pink-600 border-b-2 border-pink-500"
-                          : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                          ? "text-pink-400 border-b-2 border-pink-500"
+                          : "text-gray-400 hover:text-gray-300 hover:bg-gray-800"
                       }`}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ y: 0 }}
                     >
                       <Palette
-                        className={`h-4 w-4 mr-2 ${activeSection === "characteristics" ? "text-pink-500" : ""}`}
+                        className={`h-4 w-4 mr-2 ${activeSection === "characteristics" ? "text-pink-400" : ""}`}
                       />
                       Características
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       type="button"
                       onClick={() => setActiveSection("status")}
                       className={`flex items-center px-6 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
                         activeSection === "status"
-                          ? "text-pink-600 border-b-2 border-pink-500"
-                          : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                          ? "text-pink-400 border-b-2 border-pink-500"
+                          : "text-gray-400 hover:text-gray-300 hover:bg-gray-800"
                       }`}
+                      whileHover={{ y: -1 }}
+                      whileTap={{ y: 0 }}
                     >
-                      <Info className={`h-4 w-4 mr-2 ${activeSection === "status" ? "text-pink-500" : ""}`} />
+                      <Info className={`h-4 w-4 mr-2 ${activeSection === "status" ? "text-pink-400" : ""}`} />
                       Status
-                    </button>
+                    </motion.button>
                   </div>
 
                   <div className="p-6">
@@ -1107,30 +1183,34 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                     {renderStatusSection()}
 
                     {/* Botões de ação */}
-                    <div className="mt-8 flex justify-between items-center pt-4 border-t border-gray-200">
-                      <button
+                    <div className="mt-8 flex justify-between items-center pt-4 border-t border-gray-800">
+                      <motion.button
                         type="button"
-                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-colors"
+                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-400 hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-colors"
                         onClick={onClose}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
                         <Trash2 className="h-4 w-4 mr-1.5" />
                         Cancelar edição
-                      </button>
+                      </motion.button>
 
                       <div className="flex space-x-3">
-                        <button
+                        <motion.button
                           type="button"
                           onClick={onClose}
-                          className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+                          className="px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-sm font-medium text-gray-300 hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 focus:ring-offset-gray-900"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                         >
                           Descartar alterações
-                        </button>
+                        </motion.button>
                         <motion.button
                           type="submit"
                           disabled={saving}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className={`px-5 py-2.5 bg-gradient-to-r from-pink-500 to-pink-600 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white hover:from-pink-600 hover:to-pink-700 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 flex items-center ${
+                          className={`px-5 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white hover:from-pink-600 hover:to-purple-700 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 focus:ring-offset-gray-900 flex items-center ${
                             saving ? "opacity-80 cursor-not-allowed" : ""
                           }`}
                         >
