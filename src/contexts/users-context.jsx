@@ -191,7 +191,7 @@ export function UsersProvider({ children }) {
           }
 
           // Atualizar no localStorage
-          localStorage.setItem("megaStageAuth", JSON.stringify(updatedCurrentUser))
+          localStorage.setItem("token", JSON.stringify(updatedCurrentUser))
 
           // Atualizar o estado do usuário no contexto de autenticação
           if (setCurrentUser) {

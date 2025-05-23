@@ -1114,7 +1114,7 @@ export default function NotificationsPage({ onGoBack }) {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2 text-gray-700 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
               placeholder="Buscar notificações..."
               value={searchTerm}
               onChange={(e) => {

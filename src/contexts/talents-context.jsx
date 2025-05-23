@@ -350,6 +350,123 @@ export const TalentProvider = ({ children }) => {
     }
   }
 
+  // Adicionar as seguintes funções após a função importFromManager:
+
+  // Função para adicionar fotos a um talento
+  const addTalentPhotos = async (talentId, photosBase64) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) {
+        throw new Error("Token de autenticação não encontrado")
+      }
+
+      // Preparar os dados para envio à API
+      const photoData = {
+        photos: photosBase64.map((base64) => ({ image_base64: base64 })),
+      }
+
+      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talentId}/photos`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(photoData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`Erro ao adicionar fotos: ${response.status} - ${errorData.message || ""}`)
+      }
+
+      const data = await response.json()
+
+      // Notificar atualização de talento
+      if (notifyTalentUpdated) {
+        notifyTalentUpdated({ id: talentId })
+      }
+
+      return data
+    } catch (error) {
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Função para buscar fotos de um talento
+  const fetchTalentPhotos = async (talentId) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) {
+        throw new Error("Token de autenticação não encontrado")
+      }
+
+      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talentId}/photos`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar fotos do talento: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Função para excluir uma foto de um talento
+  const deleteTalentPhoto = async (talentId, photoId) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      if (!token) {
+        throw new Error("Token de autenticação não encontrado")
+      }
+
+      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talentId}/photos/${photoId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro ao excluir foto: ${response.status}`)
+      }
+
+      // Notificar atualização de talento
+      if (notifyTalentUpdated) {
+        notifyTalentUpdated({ id: talentId })
+      }
+
+      return true
+    } catch (error) {
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Adicionar a função importFromManager ao objeto value
   const value = {
     talents,
@@ -371,7 +488,11 @@ export const TalentProvider = ({ children }) => {
     editingTalentId,
     openEditModal,
     closeEditModal,
+    addTalentPhotos,
+    fetchTalentPhotos,
+    deleteTalentPhoto,
   }
 
   return <TalentContext.Provider value={value}>{children}</TalentContext.Provider>
 }
+

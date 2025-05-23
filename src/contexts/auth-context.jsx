@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
 
   // Verificar se o usuário já está logado ao carregar a página
   useEffect(() => {
-    const storedAuth = localStorage.getItem("megaStageAuth") || sessionStorage.getItem("megaStageAuth")
+    const storedAuth = localStorage.getItem("token") || sessionStorage.getItem("token")
     if (storedAuth) {
       try {
         const parsedAuth = JSON.parse(storedAuth)
@@ -53,9 +53,9 @@ export function AuthProvider({ children }) {
 
       // Armazenar no localStorage ou sessionStorage
       if (rememberMe) {
-        localStorage.setItem("megaStageAuth", JSON.stringify(userData))
+        localStorage.setItem("token", JSON.stringify(userData))
       } else {
-        sessionStorage.setItem("megaStageAuth", JSON.stringify(userData))
+        sessionStorage.setItem("token", JSON.stringify(userData))
       }
 
       // Armazenar o token separadamente para facilitar o acesso
@@ -72,8 +72,8 @@ export function AuthProvider({ children }) {
   }
 
   const logout = () => {
-    localStorage.removeItem("megaStageAuth")
-    sessionStorage.removeItem("megaStageAuth")
+    localStorage.removeItem("token")
+    sessionStorage.removeItem("token")
     localStorage.removeItem("token")
     setUser(null)
   }
