@@ -13,6 +13,7 @@ import {
   Trash,
   UserMinus,
   Star,
+  Image,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
