@@ -110,10 +110,11 @@
 
 
 
+
 "use client"
 
 import { useEffect, useRef } from "react"
-import { AlertTriangle, AlertCircle, Info } from "lucide-react"
+import { AlertTriangle, AlertCircle, Info, Loader2 } from "lucide-react"
 
 export default function ConfirmationModal({
   isOpen,
@@ -124,36 +125,35 @@ export default function ConfirmationModal({
   confirmText = "Confirmar",
   cancelText = "Cancelar",
   type = "danger", // danger, warning, info
+  loading = false, // NOVO: estado de loading
 }) {
   const modalRef = useRef(null)
 
-  // Fechar o modal ao pressionar ESC
+  // Fechar o modal ao pressionar ESC (apenas se não estiver carregando)
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === "Escape" && isOpen) {
+      if (e.key === "Escape" && isOpen && !loading) {
         onClose()
       }
     }
-
     document.addEventListener("keydown", handleEscape)
     return () => {
       document.removeEventListener("keydown", handleEscape)
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, loading])
 
-  // Fechar o modal ao clicar fora dele
+  // Fechar o modal ao clicar fora dele (apenas se não estiver carregando)
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target) && isOpen) {
+      if (modalRef.current && !modalRef.current.contains(e.target) && isOpen && !loading) {
         onClose()
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside)
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, loading])
 
   if (!isOpen) return null
 
@@ -162,19 +162,19 @@ export default function ConfirmationModal({
     danger: {
       icon: <AlertTriangle className="h-6 w-6 text-red-600" />,
       iconBg: "bg-red-100",
-      confirmBg: "bg-red-600 hover:bg-red-700",
+      confirmBg: "bg-red-600 hover:bg-red-700 disabled:bg-red-400",
       confirmRing: "focus:ring-red-500",
     },
     warning: {
       icon: <AlertCircle className="h-6 w-6 text-yellow-600" />,
       iconBg: "bg-yellow-100",
-      confirmBg: "bg-yellow-600 hover:bg-yellow-700",
+      confirmBg: "bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-400",
       confirmRing: "focus:ring-yellow-500",
     },
     info: {
       icon: <Info className="h-6 w-6 text-blue-600" />,
       iconBg: "bg-blue-100",
-      confirmBg: "bg-blue-600 hover:bg-blue-700",
+      confirmBg: "bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400",
       confirmRing: "focus:ring-blue-500",
     },
   }
@@ -193,27 +193,34 @@ export default function ConfirmationModal({
         <div className="p-6">
           <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full mb-4 transition-all duration-200 ease-in-out transform hover:scale-105 hover:rotate-12 cursor-default">
             <div className={`flex items-center justify-center w-12 h-12 rounded-full ${config.iconBg}`}>
-              {config.icon}
+              {loading ? <Loader2 className="h-6 w-6 text-gray-600 animate-spin" /> : config.icon}
             </div>
           </div>
+
           <h3 id="modal-title" className="text-lg font-medium text-center text-gray-900 mb-2">
-            {title}
+            {loading ? "Processando..." : title}
           </h3>
-          <p className="text-sm text-gray-500 text-center mb-6">{message}</p>
+
+          <p className="text-sm text-gray-500 text-center mb-6">{loading ? "Por favor, aguarde..." : message}</p>
+
           <div className="flex justify-center space-x-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors duration-200"
+              disabled={loading}
+              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {cancelText}
             </button>
+
             <button
               type="button"
               onClick={onConfirm}
-              className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${config.confirmBg} focus:outline-none focus:ring-2 focus:ring-offset-2 ${config.confirmRing} transition-colors duration-200`}
+              disabled={loading}
+              className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${config.confirmBg} focus:outline-none focus:ring-2 focus:ring-offset-2 ${config.confirmRing} transition-colors duration-200 disabled:cursor-not-allowed flex items-center gap-2`}
             >
-              {confirmText}
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? "Excluindo..." : confirmText}
             </button>
           </div>
         </div>
