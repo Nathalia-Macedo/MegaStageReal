@@ -1,5 +1,3 @@
-"use client"
-
 import { motion } from "framer-motion"
 import {
   Search,
@@ -17,8 +15,14 @@ import {
   CheckCircle,
   Clock,
   Sliders,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  ImageIcon,
+  Video,
+  User,
 } from "lucide-react"
-
+import { useState } from "react"
 const TalentsHelp = () => {
   const sections = [
     {
@@ -165,7 +169,109 @@ const TalentsHelp = () => {
         },
       ],
     },
+    {
+      id: "edit-modal",
+      title: "Modal de Edição",
+      icon: <Edit className="w-5 h-5 text-pink-500" />,
+      description: "Saiba como editar as informações de um talento.",
+      items: [
+        {
+          id: "edit-basics",
+          title: "Editar Informações Básicas",
+          icon: <User className="w-5 h-5 text-blue-500" />,
+          description: "Altere nome, idade, altura, cor de cabelo e olhos.",
+          tip: "Clique em 'Editar Perfil' no modal de visualização para abrir esta tela.",
+          color: "border-blue-200",
+          iconBg: "bg-blue-100",
+          iconColor: "text-blue-500",
+        },
+        {
+          id: "add-photos",
+          title: "Adicionar Fotos",
+          icon: <ImageIcon className="w-5 h-5 text-green-500" />,
+          description: "Envie novas fotos do talento para o portfólio.",
+          tip: "Arraste e solte as fotos ou clique para selecioná-las e enviá-las.",
+          color: "border-green-200",
+          iconBg: "bg-green-100",
+          iconColor: "text-green-500",
+        },
+        {
+          id: "add-videos",
+          title: "Adicionar Vídeos",
+          icon: <Video className="w-5 h-5 text-purple-500" />,
+          description: "Adicione vídeos para mostrar o trabalho do talento.",
+          tip: "Use o botão 'Adicionar Vídeo' para enviar arquivos de vídeo.",
+          color: "border-purple-200",
+          iconBg: "bg-purple-100",
+          iconColor: "text-purple-500",
+        },
+        {
+          id: "save-changes",
+          title: "Salvar Alterações",
+          icon: <CheckCircle className="w-5 h-5 text-yellow-500" />,
+          description: "Confirme as mudanças feitas no perfil.",
+          tip: "Clique em 'Salvar' para guardar tudo ou 'Cancelar' para voltar sem salvar.",
+          color: "border-yellow-200",
+          iconBg: "bg-yellow-100",
+          iconColor: "text-yellow-500",
+        },
+      ],
+    },
+    {
+      id: "view-modal",
+      title: "Modal de Visualização",
+      icon: <Eye className="w-5 h-5 text-pink-500" />,
+      description: "Aprenda a ver os detalhes de um talento.",
+      items: [
+        {
+          id: "view-details",
+          title: "Detalhes do Talento",
+          icon: <Info className="w-5 h-5 text-blue-500" />,
+          description: "Veja nome, idade, altura, idiomas e mais informações.",
+          tip: "Role a tela para ver tudo ou clique fora para fechar.",
+          color: "border-blue-200",
+          iconBg: "bg-blue-100",
+          iconColor: "text-blue-500",
+        },
+        {
+          id: "view-photos",
+          title: "Galeria de Fotos",
+          icon: <ImageIcon className="w-5 h-5 text-green-500" />,
+          description: "Explore as fotos do portfólio do talento.",
+          tip: "Clique em uma foto para ampliar e use as setas para navegar.",
+          color: "border-green-200",
+          iconBg: "bg-green-100",
+          iconColor: "text-green-500",
+        },
+        {
+          id: "view-videos",
+          title: "Vídeos do Talento",
+          icon: <Video className="w-5 h-5 text-purple-500" />,
+          description: "Assista aos vídeos adicionados pelo talento.",
+          tip: "Clique no botão de play para começar a assistir.",
+          color: "border-purple-200",
+          iconBg: "bg-purple-100",
+          iconColor: "text-purple-500",
+        },
+        {
+          id: "edit-action",
+          title: "Ação de Edição",
+          icon: <Edit className="w-5 h-5 text-yellow-500" />,
+          description: "Abra o modal de edição a partir da visualização.",
+          tip: "Clique em 'Editar Perfil' para mudar algo no talento.",
+          color: "border-yellow-200",
+          iconBg: "bg-yellow-100",
+          iconColor: "text-yellow-500",
+        },
+      ],
+    },
   ]
+
+  const [currentPage, setCurrentPage] = useState(0)
+  const itemsPerPage = 1 // Uma seção por página
+
+  const totalPages = sections.length
+  const currentSection = sections[currentPage]
 
   return (
     <motion.div
@@ -194,16 +300,16 @@ const TalentsHelp = () => {
           </p>
         </div>
 
-        {sections.map((section) => (
-          <div key={section.id} className="mt-8">
+        {currentSection && (
+          <div className="mt-8">
             <div className="flex items-center mb-4">
-              {section.icon}
-              <h3 className="text-lg font-semibold text-gray-800 ml-2">{section.title}</h3>
+              {currentSection.icon}
+              <h3 className="text-lg font-semibold text-gray-800 ml-2">{currentSection.title}</h3>
             </div>
-            <p className="text-gray-600 mb-4">{section.description}</p>
+            <p className="text-gray-600 mb-4">{currentSection.description}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              {section.items.map((item) => (
+              {currentSection.items.map((item) => (
                 <div key={item.id} className={`border ${item.color} rounded-lg p-4 transition-all hover:shadow-md`}>
                   <div className="flex items-center mb-3">
                     <div className={`${item.iconBg} p-2 rounded-lg mr-3`}>{item.icon}</div>
@@ -220,49 +326,32 @@ const TalentsHelp = () => {
               ))}
             </div>
           </div>
-        ))}
+        )}
 
-        <div className="mt-8 p-4 border border-pink-200 rounded-lg bg-pink-50">
-          <div className="flex items-center mb-2">
-            <div className="bg-pink-100 p-2 rounded-lg mr-3">
-              <Star className="w-5 h-5 text-pink-500" />
-            </div>
-            <h3 className="font-medium text-gray-800">Destaque de Talentos</h3>
-          </div>
-
-          <p className="text-gray-600 text-sm mb-3">
-            Marcar um talento como destaque o torna mais visível na plataforma. Talentos destacados aparecem na seção
-            "Destaques da Semana" no Dashboard e têm prioridade nas buscas.
-          </p>
-
-          <div className="flex items-start mt-2 bg-white p-2 rounded border border-gray-100">
-            <span className="text-pink-500 mr-2 text-lg">💡</span>
-            <span className="text-xs text-gray-600">
-              Para destacar um talento, clique no ícone de estrela na linha do talento ou use o menu de ações.
+        {/* Controles de Paginação */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center items-center space-x-4">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+              disabled={currentPage === 0}
+              className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-800"
+            >
+              <ChevronLeft className="w-5 h-5 mr-2" />
+              Anterior
+            </button>
+            <span className="text-sm text-gray-600">
+              Página {currentPage + 1} de {totalPages}
             </span>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+              disabled={currentPage === totalPages - 1}
+              className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-gray-800"
+            >
+              Próximo
+              <ChevronRight className="w-5 h-5 ml-2" />
+            </button>
           </div>
-        </div>
-
-        <div className="mt-6 p-4 border border-green-200 rounded-lg bg-green-50">
-          <div className="flex items-center mb-2">
-            <div className="bg-green-100 p-2 rounded-lg mr-3">
-              <Eye className="w-5 h-5 text-green-500" />
-            </div>
-            <h3 className="font-medium text-gray-800">Visualização de Perfil</h3>
-          </div>
-
-          <p className="text-gray-600 text-sm mb-3">
-            Ao clicar no botão "Visualizar" ou no ícone de olho, você pode ver todos os detalhes do perfil do talento,
-            incluindo fotos, informações de contato, experiências e muito mais.
-          </p>
-
-          <div className="flex items-start mt-2 bg-white p-2 rounded border border-gray-100">
-            <span className="text-pink-500 mr-2 text-lg">💡</span>
-            <span className="text-xs text-gray-600">
-              A visualização de perfil mostra exatamente como o talento aparece para os visitantes da plataforma.
-            </span>
-          </div>
-        </div>
+        )}
       </div>
     </motion.div>
   )
