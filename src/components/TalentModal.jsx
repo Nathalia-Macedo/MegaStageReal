@@ -8,38 +8,61 @@ import {
   Edit,
   Globe,
   Clock,
-  Check,
-  AlertCircle,
   Music,
   Calendar,
   Ruler,
   Eye,
   Palette,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  ImageIcon,
 } from "lucide-react"
 import { toast } from "react-toastify"
 
 export default function TalentModal({ onClose }) {
-  const { selectedTalent, isModalOpen, closeModal, toggleHighlight, openEditModal } = useTalent()
+  const { selectedTalent, isModalOpen, closeModal, toggleHighlight, openEditModal, fetchTalentPhotos } = useTalent()
   const [isVisible, setIsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [photos, setPhotos] = useState([])
+  const [loadingPhotos, setLoadingPhotos] = useState(false)
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(null)
   const modalRef = useRef(null)
-  const contentRef = useRef(null)
+  const photosContainerRef = useRef(null)
+
+  // Carregar fotos automaticamente quando o modal abrir
+  useEffect(() => {
+    if (isModalOpen && selectedTalent?.id) {
+      loadPhotos()
+    }
+  }, [isModalOpen, selectedTalent?.id])
+
+  const loadPhotos = async () => {
+    if (!selectedTalent?.id) return
+
+    setLoadingPhotos(true)
+    try {
+      const photosData = await fetchTalentPhotos(selectedTalent.id)
+      setPhotos(photosData || [])
+    } catch (error) {
+      console.error("Erro ao carregar fotos:", error)
+      // Não mostrar toast de erro para não incomodar o usuário
+    } finally {
+      setLoadingPhotos(false)
+    }
+  }
 
   // Prevenir scroll da página quando o modal estiver aberto
   useEffect(() => {
     if (isModalOpen) {
       setIsVisible(true)
       document.body.style.overflow = "hidden"
-
-      // Prevenir eventos de toque na página principal
       const preventTouch = (e) => {
         if (!modalRef.current?.contains(e.target)) {
           e.preventDefault()
         }
       }
-
       document.addEventListener("touchmove", preventTouch, { passive: false })
-
       return () => {
         document.body.style.overflow = "auto"
         document.removeEventListener("touchmove", preventTouch)
@@ -53,11 +76,9 @@ export default function TalentModal({ onClose }) {
         handleClose()
       }
     }
-
     if (isModalOpen) {
       document.addEventListener("mousedown", handleClickOutside)
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
@@ -66,18 +87,20 @@ export default function TalentModal({ onClose }) {
   useEffect(() => {
     const handleEscKey = (event) => {
       if (event.key === "Escape") {
-        handleClose()
+        if (selectedPhotoIndex !== null) {
+          setSelectedPhotoIndex(null)
+        } else {
+          handleClose()
+        }
       }
     }
-
     if (isModalOpen) {
       window.addEventListener("keydown", handleEscKey)
     }
-
     return () => {
       window.removeEventListener("keydown", handleEscKey)
     }
-  }, [isModalOpen])
+  }, [isModalOpen, selectedPhotoIndex])
 
   if (!isModalOpen || !selectedTalent) return null
 
@@ -103,14 +126,31 @@ export default function TalentModal({ onClose }) {
     }
   }
 
+  const renderTalentType = (tipo_talento) => {
+    if (!tipo_talento || tipo_talento.trim() === "") {
+      return "A definir"
+    }
+    return tipo_talento
+  }
+
+  const getTalentTypeColor = (tipo_talento) => {
+    if (!tipo_talento || tipo_talento.trim() === "") {
+      return "bg-gray-100 text-gray-600"
+    }
+    if (tipo_talento === "Ator") {
+      return "bg-blue-100 text-blue-800"
+    }
+    if (tipo_talento === "Atriz") {
+      return "bg-pink-100 text-pink-800"
+    }
+    return "bg-purple-100 text-purple-800"
+  }
+
   const handleToggleHighlight = async () => {
     try {
       setIsLoading(true)
       await toggleHighlight(selectedTalent.id, selectedTalent.destaque)
-
-      // Atualizar o estado local do talento para refletir a mudança imediatamente
       selectedTalent.destaque = !selectedTalent.destaque
-
       toast.success(selectedTalent.destaque ? "Destaque adicionado com sucesso!" : "Destaque removido com sucesso!", {
         toastId: `toggle-highlight-${selectedTalent.id}-success`,
       })
@@ -129,22 +169,19 @@ export default function TalentModal({ onClose }) {
     setTimeout(() => {
       closeModal()
       if (onClose) onClose()
+      setPhotos([])
+      setSelectedPhotoIndex(null)
     }, 300)
   }
 
   const handleEdit = () => {
-    // Armazenar o ID do talento que queremos editar
     const talentIdToEdit = selectedTalent.id
-
-    // Iniciar o fechamento do modal atual
     setIsVisible(false)
-
-    // Fechar o modal atual e abrir o de edição após a animação terminar
     setTimeout(() => {
       closeModal()
       if (onClose) onClose()
-
-      // Pequeno delay adicional para garantir que o modal atual foi completamente fechado
+      setPhotos([])
+      setSelectedPhotoIndex(null)
       setTimeout(() => {
         if (typeof openEditModal === "function") {
           openEditModal(talentIdToEdit)
@@ -176,15 +213,33 @@ export default function TalentModal({ onClose }) {
     return selectedTalent.disponivel ? "Disponível" : "Indisponível"
   }
 
-  const getStatusIcon = () => {
-    if (!selectedTalent.ativo) return <AlertCircle className="h-3.5 w-3.5" />
-    return selectedTalent.disponivel ? <Check className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />
+  const handleTouchMove = (e) => {
+    e.stopPropagation()
   }
 
-  // Função para lidar com eventos de toque no modal
-  const handleTouchMove = (e) => {
-    // Permitir rolagem apenas dentro do modal
-    e.stopPropagation()
+  const handlePhotoClick = (index) => {
+    setSelectedPhotoIndex(index)
+  }
+
+  const handleNextPhoto = () => {
+    setSelectedPhotoIndex((prev) => (prev + 1) % photos.length)
+  }
+
+  const handlePrevPhoto = () => {
+    setSelectedPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)
+  }
+
+  const scrollPhotos = (direction) => {
+    if (photosContainerRef.current) {
+      const scrollAmount = 200
+      const currentScroll = photosContainerRef.current.scrollLeft
+      const newScroll = direction === "left" ? currentScroll - scrollAmount : currentScroll + scrollAmount
+
+      photosContainerRef.current.scrollTo({
+        left: newScroll,
+        behavior: "smooth",
+      })
+    }
   }
 
   return (
@@ -210,7 +265,7 @@ export default function TalentModal({ onClose }) {
             onClick={(e) => e.stopPropagation()}
             onTouchMove={handleTouchMove}
           >
-            {/* Botão de fechar (sempre visível no canto superior direito) */}
+            {/* Botão de fechar */}
             <button
               onClick={handleClose}
               className="absolute top-4 right-4 z-20 flex items-center justify-center w-8 h-8 rounded-full bg-white/90 text-gray-600 hover:text-gray-900 hover:bg-white transition-all shadow-sm focus:outline-none"
@@ -235,7 +290,6 @@ export default function TalentModal({ onClose }) {
                         e.target.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500" viewBox="0 0 400 500"><rect width="400" height="500" fill="%23f0f0f0"/><text x="50%" y="50%" fontFamily="Arial" fontSize="64" fill="%23d0d0d0" textAnchor="middle" dy=".3em">${selectedTalent.name?.charAt(0) || "T"}</text></svg>`
                       }}
                     />
-
                     {/* Status indicator */}
                     <div className="absolute top-4 left-4 flex items-center space-x-1.5">
                       <div className={`h-2.5 w-2.5 rounded-full ${getStatusColor()}`}></div>
@@ -243,7 +297,6 @@ export default function TalentModal({ onClose }) {
                         {getStatusText()}
                       </span>
                     </div>
-
                     {/* Destaque badge */}
                     {selectedTalent.destaque && (
                       <div className="absolute top-4 right-4 bg-amber-400 p-1.5 rounded-full shadow-lg">
@@ -261,22 +314,16 @@ export default function TalentModal({ onClose }) {
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="text-xl md:text-2xl font-bold text-gray-900">{selectedTalent.name}</h2>
                         <div
-                          className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                            selectedTalent.category === "Ator" || selectedTalent.category === "Atriz"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-purple-100 text-purple-800"
-                          }`}
+                          className={`px-2.5 py-1 text-xs font-medium rounded-full ${getTalentTypeColor(selectedTalent.tipo_talento)}`}
                         >
-                          {selectedTalent.category || selectedTalent.tipo_talento}
+                          {renderTalentType(selectedTalent.tipo_talento)}
                         </div>
                       </div>
-
                       <div className="flex flex-wrap items-center text-gray-500 text-sm gap-2">
                         <div className="flex items-center">
                           <Calendar className="h-4 w-4 mr-1.5 text-gray-400" />
                           <span>{calculateAge(selectedTalent.birth_date)} anos</span>
                         </div>
-
                         {selectedTalent.instagram && (
                           <div className="flex items-center">
                             <Instagram className="h-4 w-4 mr-1 text-pink-500" />
@@ -316,7 +363,6 @@ export default function TalentModal({ onClose }) {
                             {formatHeight(selectedTalent.height)}
                           </span>
                         </div>
-
                         <div className="flex flex-col items-center justify-center p-2 md:p-4 bg-gray-50 rounded-xl border border-gray-100">
                           <Palette className="h-4 w-4 md:h-5 md:w-5 text-gray-400 mb-1" />
                           <span className="text-xs md:text-sm text-gray-500">Cabelos</span>
@@ -324,7 +370,6 @@ export default function TalentModal({ onClose }) {
                             {selectedTalent.hair_color || "-"}
                           </span>
                         </div>
-
                         <div className="flex flex-col items-center justify-center p-2 md:p-4 bg-gray-50 rounded-xl border border-gray-100">
                           <Eye className="h-4 w-4 md:h-5 md:w-5 text-gray-400 mb-1" />
                           <span className="text-xs md:text-sm text-gray-500">Olhos</span>
@@ -333,6 +378,80 @@ export default function TalentModal({ onClose }) {
                           </span>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Carrossel de Fotos */}
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm uppercase tracking-wider text-gray-500 font-medium">
+                          Fotos do Portfólio
+                        </h3>
+                        {photos.length > 0 && (
+                          <span className="text-xs text-gray-400">
+                            {photos.length} foto{photos.length !== 1 ? "s" : ""}
+                          </span>
+                        )}
+                      </div>
+
+                      {loadingPhotos ? (
+                        <div className="flex justify-center py-8">
+                          <Loader2 className="h-6 w-6 text-gray-400 animate-spin" />
+                        </div>
+                      ) : photos.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg border border-gray-100">
+                          <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500">Nenhuma foto disponível</p>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          {/* Botões de navegação */}
+                          {photos.length > 3 && (
+                            <>
+                              <button
+                                onClick={() => scrollPhotos("left")}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-gray-900 transition-all"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => scrollPhotos("right")}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 hover:bg-white rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-gray-900 transition-all"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
+
+                          {/* Container das fotos com scroll horizontal */}
+                          <div
+                            ref={photosContainerRef}
+                            className="flex gap-2 overflow-x-auto scrollbar-hide pb-2"
+                            style={{
+                              scrollbarWidth: "none",
+                              msOverflowStyle: "none",
+                              WebkitScrollbar: { display: "none" },
+                            }}
+                          >
+                            {photos.map((photo, index) => (
+                              <div
+                                key={photo.id}
+                                className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded-lg overflow-hidden cursor-pointer group shadow-sm hover:shadow-md transition-all"
+                                onClick={() => handlePhotoClick(index)}
+                              >
+                                <img
+                                  src={photo.image_url || "/placeholder.svg"}
+                                  alt={`Foto ${index + 1} de ${selectedTalent.name}`}
+                                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                  onError={(e) => {
+                                    e.target.onerror = null
+                                    e.target.src = "/placeholder.svg?height=100&width=100&text=Foto+não+disponível"
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Habilidades e Idiomas */}
@@ -352,7 +471,6 @@ export default function TalentModal({ onClose }) {
                               </span>
                             </div>
                           </div>
-
                           {selectedTalent.instruments && selectedTalent.instruments.length > 0 && (
                             <div className="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-100">
                               <div className="mr-3 p-1.5 bg-pink-100 rounded-full flex-shrink-0 mt-0.5">
@@ -406,7 +524,6 @@ export default function TalentModal({ onClose }) {
                     <Edit className="h-4 w-4 mr-2" />
                     Editar Perfil
                   </button>
-
                   <button
                     onClick={handleToggleHighlight}
                     disabled={isLoading}
@@ -432,6 +549,66 @@ export default function TalentModal({ onClose }) {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Modal de visualização de foto em tela cheia */}
+      <AnimatePresence>
+        {selectedPhotoIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
+            onClick={() => setSelectedPhotoIndex(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="relative max-w-4xl max-h-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={photos[selectedPhotoIndex]?.image_url || "/placeholder.svg"}
+                alt={`Foto ${selectedPhotoIndex + 1} de ${selectedTalent.name}`}
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+
+              {/* Botões de navegação */}
+              {photos.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrevPhoto}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={handleNextPhoto}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+
+              {/* Botão fechar */}
+              <button
+                onClick={() => setSelectedPhotoIndex(null)}
+                className="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {/* Indicador de posição */}
+              {photos.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                  {selectedPhotoIndex + 1} de {photos.length}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   )
 }
