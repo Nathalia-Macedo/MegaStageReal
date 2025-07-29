@@ -13,7 +13,7 @@ import {
   Trash,
   UserMinus,
   Star,
-  Image,
+  ImageIcon,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -35,6 +35,7 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isMarkingAllAsRead, setIsMarkingAllAsRead] = useState(false)
   const profileRef = useRef(null)
   const notificationsRef = useRef(null)
 
@@ -142,13 +143,18 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
     }
   }
 
-  // Função para lidar com marcar todas como lidas
-  const handleMarkAllAsRead = () => {
-    if (markAllAsRead && typeof markAllAsRead === "function") {
-      // Desabilitar o botão enquanto estiver carregando
-      if (loading) return
+  // Função otimizada para lidar com marcar todas como lidas
+  const handleMarkAllAsRead = async () => {
+    if (!markAllAsRead || typeof markAllAsRead !== "function") return
+    if (isMarkingAllAsRead || loading || notifications.length === 0 || unreadCount === 0) return
 
-      markAllAsRead()
+    try {
+      setIsMarkingAllAsRead(true)
+      await markAllAsRead()
+    } catch (error) {
+      console.error("Erro ao marcar todas as notificações como lidas:", error)
+    } finally {
+      setIsMarkingAllAsRead(false)
     }
   }
 
@@ -186,7 +192,6 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
 
     // Verificar a ação para determinar o ícone
     const action = notification.action || "bell"
-
     if (action === "user" || action.includes("user_created")) {
       IconComponent = UserPlus
       iconColorClass = "text-blue-500"
@@ -386,13 +391,13 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
                           <h3 className="text-sm font-medium text-gray-900">Notificações</h3>
                           <button
                             onClick={handleMarkAllAsRead}
-                            className="text-xs text-pink-600 hover:text-pink-800"
-                            disabled={loading || notifications.length === 0 || unreadCount === 0}
+                            className="text-xs text-pink-600 hover:text-pink-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isMarkingAllAsRead || loading || notifications.length === 0 || unreadCount === 0}
                           >
-                            {loading ? (
+                            {isMarkingAllAsRead ? (
                               <span className="flex items-center">
                                 <Loader2 className="animate-spin h-3 w-3 mr-1" />
-                                Processando...
+                                Marcando...
                               </span>
                             ) : (
                               "Marcar todas como lidas"
@@ -400,7 +405,6 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
                           </button>
                         </div>
                       </motion.div>
-
                       <div className="max-h-60 overflow-y-auto">
                         {loading ? (
                           <motion.div
@@ -453,7 +457,6 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
                           </motion.div>
                         )}
                       </div>
-
                       {/* Pré-renderizando o link "Ver todas as notificações" para evitar atraso */}
                       <motion.div
                         variants={itemVariants}
@@ -498,13 +501,7 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
                         }}
                       />
                     ) : (
-                      <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      <ImageIcon className="h-5 w-5 text-gray-400" />
                     )}
                   </div>
                   <div className="text-left hidden lg:block">
@@ -620,6 +617,7 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
                 </motion.button>
               ))}
             </motion.div>
+
             <div className="pt-4 pb-3 border-t border-gray-700">
               <div className="flex items-center px-5">
                 <div className="flex-shrink-0">
@@ -635,13 +633,7 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
                         }}
                       />
                     ) : (
-                      <svg className="h-6 w-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      <ImageIcon className="h-6 w-6 text-gray-400" />
                     )}
                   </div>
                 </div>
@@ -664,6 +656,7 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
                   )}
                 </button>
               </div>
+
               <motion.div
                 className="mt-3 px-2 space-y-1"
                 variants={{
