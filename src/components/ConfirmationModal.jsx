@@ -1,230 +1,70 @@
-// import { useEffect, useRef } from "react"
-// import { AlertTriangle, AlertCircle, Info } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { X, AlertTriangle } from "lucide-react"
 
-// export default function ConfirmationModal({
-//   isOpen,
-//   onClose,
-//   onConfirm,
-//   title,
-//   message,
-//   confirmText = "Confirmar",
-//   cancelText = "Cancelar",
-//   type = "danger", // danger, warning, info
-// }) {
-//   const modalRef = useRef(null)
-
-//   // Fechar o modal ao pressionar ESC
-//   useEffect(() => {
-//     const handleEscape = (e) => {
-//       if (e.key === "Escape" && isOpen) {
-//         onClose()
-//       }
-//     }
-
-//     document.addEventListener("keydown", handleEscape)
-//     return () => {
-//       document.removeEventListener("keydown", handleEscape)
-//     }
-//   }, [isOpen, onClose])
-
-//   // Fechar o modal ao clicar fora dele
-//   useEffect(() => {
-//     const handleClickOutside = (e) => {
-//       if (modalRef.current && !modalRef.current.contains(e.target) && isOpen) {
-//         onClose()
-//       }
-//     }
-
-//     document.addEventListener("mousedown", handleClickOutside)
-//     return () => {
-//       document.removeEventListener("mousedown", handleClickOutside)
-//     }
-//   }, [isOpen, onClose])
-
-//   if (!isOpen) return null
-
-//   // Configurações baseadas no tipo
-//   const typeConfig = {
-//     danger: {
-//       icon: <AlertTriangle className="h-6 w-6 text-red-600" />,
-//       iconBg: "bg-red-100",
-//       confirmBg: "bg-red-600 hover:bg-red-700",
-//       confirmRing: "focus:ring-red-500",
-//     },
-//     warning: {
-//       icon: <AlertCircle className="h-6 w-6 text-yellow-600" />,
-//       iconBg: "bg-yellow-100",
-//       confirmBg: "bg-yellow-600 hover:bg-yellow-700",
-//       confirmRing: "focus:ring-yellow-500",
-//     },
-//     info: {
-//       icon: <Info className="h-6 w-6 text-blue-600" />,
-//       iconBg: "bg-blue-100",
-//       confirmBg: "bg-blue-600 hover:bg-blue-700",
-//       confirmRing: "focus:ring-blue-500",
-//     },
-//   }
-
-//   const config = typeConfig[type] || typeConfig.danger
-
-//   return (
-//     <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4 animate-fadeIn">
-//       <div
-//         ref={modalRef}
-//         className="bg-white rounded-lg shadow-xl max-w-md w-full mx-auto animate-scaleIn"
-//         role="dialog"
-//         aria-modal="true"
-//         aria-labelledby="modal-title"
-//       >
-//         <div className="p-6">
-//           <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full mb-4 transition-all duration-200 ease-in-out transform hover:scale-105 hover:rotate-12 cursor-default">
-//             <div className={`flex items-center justify-center w-12 h-12 rounded-full ${config.iconBg}`}>
-//               {config.icon}
-//             </div>
-//           </div>
-//           <h3 id="modal-title" className="text-lg font-medium text-center text-gray-900 mb-2">
-//             {title}
-//           </h3>
-//           <p className="text-sm text-gray-500 text-center mb-6">{message}</p>
-//           <div className="flex justify-center space-x-3">
-//             <button
-//               type="button"
-//               onClick={onClose}
-//               className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors duration-200"
-//             >
-//               {cancelText}
-//             </button>
-//             <button
-//               type="button"
-//               onClick={onConfirm}
-//               className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${config.confirmBg} focus:outline-none focus:ring-2 focus:ring-offset-2 ${config.confirmRing} transition-colors duration-200`}
-//             >
-//               {confirmText}
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-
-
-
-"use client"
-
-import { useEffect, useRef } from "react"
-import { AlertTriangle, AlertCircle, Info, Loader2 } from "lucide-react"
-
-export default function ConfirmationModal({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  message,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
-  type = "danger", // danger, warning, info
-  loading = false, // NOVO: estado de loading
-}) {
-  const modalRef = useRef(null)
-
-  // Fechar o modal ao pressionar ESC (apenas se não estiver carregando)
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === "Escape" && isOpen && !loading) {
-        onClose()
-      }
-    }
-    document.addEventListener("keydown", handleEscape)
-    return () => {
-      document.removeEventListener("keydown", handleEscape)
-    }
-  }, [isOpen, onClose, loading])
-
-  // Fechar o modal ao clicar fora dele (apenas se não estiver carregando)
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target) && isOpen && !loading) {
-        onClose()
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [isOpen, onClose, loading])
-
+export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, loading = false }) {
   if (!isOpen) return null
 
-  // Configurações baseadas no tipo
-  const typeConfig = {
-    danger: {
-      icon: <AlertTriangle className="h-6 w-6 text-red-600" />,
-      iconBg: "bg-red-100",
-      confirmBg: "bg-red-600 hover:bg-red-700 disabled:bg-red-400",
-      confirmRing: "focus:ring-red-500",
-    },
-    warning: {
-      icon: <AlertCircle className="h-6 w-6 text-yellow-600" />,
-      iconBg: "bg-yellow-100",
-      confirmBg: "bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-400",
-      confirmRing: "focus:ring-yellow-500",
-    },
-    info: {
-      icon: <Info className="h-6 w-6 text-blue-600" />,
-      iconBg: "bg-blue-100",
-      confirmBg: "bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400",
-      confirmRing: "focus:ring-blue-500",
-    },
-  }
-
-  const config = typeConfig[type] || typeConfig.danger
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4 animate-fadeIn">
-      <div
-        ref={modalRef}
-        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-auto animate-scaleIn"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]"
+        onClick={onClose}
       >
-        <div className="p-6">
-          <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full mb-4 transition-all duration-200 ease-in-out transform hover:scale-105 hover:rotate-12 cursor-default">
-            <div className={`flex items-center justify-center w-12 h-12 rounded-full ${config.iconBg}`}>
-              {loading ? <Loader2 className="h-6 w-6 text-gray-600 animate-spin" /> : config.icon}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="ml-3 text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
             </div>
-          </div>
-
-          <h3 id="modal-title" className="text-lg font-medium text-center text-gray-900 mb-2">
-            {loading ? "Processando..." : title}
-          </h3>
-
-          <p className="text-sm text-gray-500 text-center mb-6">{loading ? "Por favor, aguarde..." : message}</p>
-
-          <div className="flex justify-center space-x-3">
             <button
-              type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50"
             >
-              {cancelText}
-            </button>
-
-            <button
-              type="button"
-              onClick={onConfirm}
-              disabled={loading}
-              className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${config.confirmBg} focus:outline-none focus:ring-2 focus:ring-offset-2 ${config.confirmRing} transition-colors duration-200 disabled:cursor-not-allowed flex items-center gap-2`}
-            >
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {loading ? "Excluindo..." : confirmText}
+              <X className="h-5 w-5" />
             </button>
           </div>
-        </div>
-      </div>
-    </div>
+
+          <div className="mb-6">
+            <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>
+          </div>
+
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={loading}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Processando...
+                </>
+              ) : (
+                "Confirmar"
+              )}
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   )
 }
