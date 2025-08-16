@@ -23,7 +23,7 @@ import {
 import { toast } from "react-toastify"
 
 export default function TalentModal({ onClose }) {
-  const { selectedTalent, isModalOpen, closeModal, toggleHighlight, openEditModal, fetchTalentPhotos, fetchTalentVideos, fetchPreviousJobs } = useTalent()
+  const { selectedTalent, isModalOpen, closeModal, toggleHighlight, openEditModal, fetchTalentPhotos, fetchTalentVideos, fetchPreviousJobs, fetchPreviousJobById } = useTalent()
   const [isVisible, setIsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [photos, setPhotos] = useState([])
@@ -37,17 +37,21 @@ export default function TalentModal({ onClose }) {
   const photosContainerRef = useRef(null)
 
   // Carregar fotos, vídeos e trabalhos automaticamente quando o modal abrir
-  useEffect(() => {
-    console.log("useEffect disparado - isModalOpen:", isModalOpen, "selectedTalent.id:", selectedTalent?.id)
-    if (isModalOpen && selectedTalent?.id) {
-      console.log("Condição atendida, chamando loadPhotos, loadVideos e loadJobs")
-      loadPhotos()
-      loadVideos()
-      loadJobs()
-    } else {
-      console.log("Condição não atendida, modal fechado ou sem ID")
-    }
-  }, [isModalOpen, selectedTalent?.id])
+ useEffect(() => {
+  console.log("useEffect disparado - isModalOpen:", isModalOpen, "selectedTalent.id:", selectedTalent?.id)
+  if (isModalOpen && selectedTalent?.id) {
+    console.log("Condição atendida, chamando loadPhotos, loadVideos e loadJobs")
+    loadPhotos()
+    loadVideos()
+    loadJobs()
+  }
+  return () => {
+    setPhotos([])
+    setVideos([])
+    setJobs([])
+    setSelectedPhotoIndex(null)
+  }
+}, [isModalOpen, selectedTalent?.id])
 
   const loadPhotos = async () => {
     if (!selectedTalent?.id) return
@@ -85,22 +89,38 @@ export default function TalentModal({ onClose }) {
   }
 
   const loadJobs = async () => {
-    if (!selectedTalent?.id) {
-      console.log("Nenhum selectedTalent.id disponível para carregar jobs")
-      return
-    }
-    console.log("Iniciando loadJobs para o talent ID:", selectedTalent.id)
-    setLoadingJobs(true)
+  if (!selectedTalent?.id) {
+    console.log("Nenhum selectedTalent.id disponível para carregar jobs")
+    return
+  }
+  console.log("Iniciando loadJobs para o talent ID:", selectedTalent.id)
+  setLoadingJobs(true)
+  try {
+    const jobsData = await fetchPreviousJobs(selectedTalent.id)
+    console.log("Resposta de fetchPreviousJobs (crua):", jobsData)
+    const jobsArray = Array.isArray(jobsData) ? jobsData : []
+    const validatedJobs = jobsArray.map(job => ({
+      ...job,
+      job_description: job.job_description || "Trabalho sem título",
+      text_format: job.text_format || "Sem descrição",
+    }))
+    console.log("Jobs processados para renderização:", validatedJobs)
+    setJobs(validatedJobs)
+  } catch (error) {
+    console.error("Erro ao carregar trabalhos:", error)
+    setJobs([])
+  } finally {
+    setLoadingJobs(false)
+  }
+}
+  const handleJobDetails = async (jobId) => {
     try {
-      const jobsData = await fetchPreviousJobs(selectedTalent.id)
-      console.log("Resposta de fetchPreviousJobs (crua):", jobsData)
-      const jobsArray = Array.isArray(jobsData) ? jobsData : []
-      console.log("Jobs processados para renderização:", jobsArray)
-      setJobs(jobsArray)
+      const jobDetails = await fetchPreviousJobById(jobId)
+      console.log("Detalhes do trabalho:", jobDetails)
+      toast.success(`Detalhes do trabalho ${jobId}: ${jobDetails.job_description}`)
     } catch (error) {
-      console.error("Erro ao carregar trabalhos:", error)
-    } finally {
-      setLoadingJobs(false)
+      console.error("Erro ao buscar detalhes do trabalho:", error)
+      toast.error("Erro ao carregar detalhes do trabalho")
     }
   }
 
@@ -582,12 +602,13 @@ export default function TalentModal({ onClose }) {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {videos.map((video, index) => (
+                          {videos.filter(video => video && video.id != null).map((video, index) => (
                             <div
-                              key={video.id || `video-${index}`}
+                              key={video.id ? `video-${video.id}` : `video-fallback-${index}`}
                               className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all"
                             >
                               <video
+                                id={`video-${video.id ? video.id : index}`}
                                 className="w-24 h-16 md:w-32 md:h-20 object-cover rounded-md mr-3"
                                 controls
                               >
@@ -604,7 +625,7 @@ export default function TalentModal({ onClose }) {
                               </div>
                               <button
                                 onClick={() => {
-                                  const videoElement = document.querySelector(`#video-${video.id || index}`);
+                                  const videoElement = document.getElementById(`video-${video.id ? video.id : index}`);
                                   if (videoElement) videoElement.play();
                                 }}
                                 className="ml-3 p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-colors shadow-sm"
@@ -641,25 +662,33 @@ export default function TalentModal({ onClose }) {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {jobs.map((job, index) => (
-                            <div
-                              key={job.id || `job-${index}`}
-                              className="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-100"
-                            >
-                              <div className="mr-3 p-1.5 bg-purple-100 rounded-full flex-shrink-0">
-                                <Briefcase className="h-4 w-4 text-purple-500" />
-                              </div>
-                              <div className="flex-grow">
-                                <h4 className="text-sm font-medium text-gray-900">
-                                  {job.title || job.job_description || "Trabalho sem título"}
-                                </h4>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {job.description || job.job_description || "Sem descrição"}
-                                </p>
-                                {job.year && <p className="text-xs text-gray-400 mt-1">{job.year}</p>}
-                              </div>
-                            </div>
-                          ))}
+                          {jobs.filter(job => job && job.id != null).map((job, index) => (
+  <div
+    key={job.id ? `job-${job.id}-${selectedTalent.id}` : `job-fallback-${index}-${selectedTalent.id}`}
+    className="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-100"
+  >
+    <div className="mr-3 p-1.5 bg-purple-100 rounded-full flex-shrink-0">
+      <Briefcase className="h-4 w-4 text-purple-500" />
+    </div>
+    <div className="flex-grow">
+      <h4 className="text-sm font-medium text-gray-900">
+        {job.job_description || "Trabalho sem título"}
+      </h4>
+      <p className="text-xs text-gray-500 mt-1">
+        {job.text_format || "Sem descrição"}
+      </p>
+      {job.id && (
+        <button
+          onClick={() => handleJobDetails(job.id)}
+          className="mt-1 text-xs text-blue-500 hover:text-blue-600"
+          aria-label={`Ver detalhes do trabalho ${job.id}`}
+        >
+          Ver detalhes
+        </button>
+      )}
+    </div>
+  </div>
+))}
                         </div>
                       )}
                     </div>
@@ -689,7 +718,7 @@ export default function TalentModal({ onClose }) {
                     type="button"
                   >
                     {isLoading ? (
-                      <div className="animate-spin h-5 w-5 border-2 border-t-transparent rounded-full"></div>
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <>
                         <Star className={`h-4 w-4 mr-2 ${selectedTalent.destaque ? "fill-white" : ""}`} />
@@ -763,3 +792,8 @@ export default function TalentModal({ onClose }) {
     </AnimatePresence>
   )
 }
+
+
+
+
+

@@ -24,17 +24,16 @@ export const TalentProvider = ({ children }) => {
     setError(null)
     try {
       console.log("Buscando talentos da rota pública...")
-      const response = await fetch("https://megastage.onrender.com/api/v1/proxy/talents/", {
+      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/proxy/talents", {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          Accept: "application/json", // Mantém apenas o Accept, se necessário
+          "ngrok-skip-browser-warning": "true",
         },
       })
       console.log("Response status:", response.status)
       if (!response.ok) {
         const errorText = await response.text()
-        console.error("Erro na resposta:", errorText)
         throw new Error(`Erro ao buscar talentos: ${response.status} - ${errorText}`)
       }
       const data = await response.json()
@@ -89,13 +88,16 @@ export const TalentProvider = ({ children }) => {
     setError(null)
     try {
       console.log(`Buscando fotos do talento ${talentId} da rota pública...`)
-      const response = await fetch(`https://megastage.onrender.com/api/v1/proxy/talents/${talentId}/photos`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/proxy/talents/${talentId}/photos`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
         },
-      })
+      )
       console.log(`Response status para fotos do talento ${talentId}:`, response.status)
       if (!response.ok) {
         const errorText = await response.text()
@@ -135,7 +137,7 @@ export const TalentProvider = ({ children }) => {
         instagram: talentData.instagram || "",
         tipo_talento: talentData.type || "Ator",
       }
-      const response = await fetch("https://megastage.onrender.com/api/v1/talents", {
+      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/talents", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(apiTalentData),
@@ -176,7 +178,7 @@ export const TalentProvider = ({ children }) => {
         instagram: talentData.instagram || "",
         tipo_talento: talentData.tipo_talento || "Ator",
       }
-      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talent_id}`, {
+      const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talent_id}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify(apiTalentData),
@@ -199,7 +201,7 @@ export const TalentProvider = ({ children }) => {
     setError(null)
     try {
       if (!token) throw new Error("Token de autenticação não encontrado")
-      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talent_id}`, {
+      const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talent_id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       })
@@ -232,7 +234,7 @@ export const TalentProvider = ({ children }) => {
     setError(null)
     try {
       if (!token) throw new Error("Token de autenticação não encontrado")
-      const response = await fetch(`https://megastage.onrender.com/api/v1/integration/${incremental}`, {
+      const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/integration/${incremental}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       })
@@ -263,7 +265,7 @@ export const TalentProvider = ({ children }) => {
       const formData = new FormData()
       files.forEach((file) => formData.append("files", file))
       formData.append("release", "false")
-      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talentId}/photos`, {
+      const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/photos`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -288,10 +290,13 @@ export const TalentProvider = ({ children }) => {
     setError(null)
     try {
       if (!token) throw new Error("Token de autenticação não encontrado")
-      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talentId}/photos/${photoId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      })
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/photos/${photoId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        },
+      )
       if (!response.ok) throw new Error(`Erro ao excluir foto: ${response.status}`)
       if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId })
       return true
@@ -315,7 +320,7 @@ export const TalentProvider = ({ children }) => {
       const formData = new FormData()
       videoFiles.forEach((file) => formData.append("files", file))
 
-      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talentId}/videos`, {
+      const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/videos`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -346,7 +351,7 @@ export const TalentProvider = ({ children }) => {
     try {
       const token = localStorage.getItem("token")
       if (!token) throw new Error("Token de autenticação não encontrado")
-      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talentId}/videos`, {
+      const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/videos`, {
         method: "GET",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       })
@@ -361,15 +366,48 @@ export const TalentProvider = ({ children }) => {
     }
   }
 
+  const fetchTalentVideosProxy = async (talentId) => {
+    setError(null)
+    try {
+      console.log(`Buscando vídeos do talento ${talentId} da rota pública...`)
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/proxy/talents/${talentId}/videos`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
+      )
+      console.log(`Response status para vídeos do talento ${talentId}:`, response.status)
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`Erro na resposta para vídeos do talento ${talentId}:`, errorText)
+        throw new Error(`Erro ao buscar vídeos do talento: ${response.status} - ${errorText}`)
+      }
+      const data = await response.json()
+      console.log(`Vídeos do talento ${talentId}:`, data)
+      return data
+    } catch (error) {
+      console.error(`Erro ao buscar vídeos do talento ${talentId}:`, error)
+      setError(error.message)
+      throw error
+    }
+  }
+
   const deleteTalentVideo = async (talentId, videoId) => {
     setLoading(true)
     setError(null)
     try {
       if (!token) throw new Error("Token de autenticação não encontrado")
-      const response = await fetch(`https://megastage.onrender.com/api/v1/talents/${talentId}/videos/${videoId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      })
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/videos/${videoId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        },
+      )
       if (!response.ok) throw new Error(`Erro ao excluir vídeo: ${response.status}`)
       if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId })
       return true
@@ -390,7 +428,7 @@ export const TalentProvider = ({ children }) => {
       const token = localStorage.getItem("token")
       if (!token) throw new Error("Token de autenticação não encontrado")
 
-      const response = await fetch(`https://megastage.onrender.com/api/v1/previous_jobs/?talent_id=${talentId}`, {
+      const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/${talentId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -410,6 +448,36 @@ export const TalentProvider = ({ children }) => {
     }
   }
 
+  const fetchPreviousJobsProxy = async (talentId) => {
+    setError(null)
+    try {
+      console.log(`Buscando trabalhos anteriores do talento ${talentId} da rota pública...`)
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/proxy/talents/${talentId}/previous_jobs`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
+      )
+      console.log(`Response status para trabalhos anteriores do talento ${talentId}:`, response.status)
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`Erro na resposta para trabalhos anteriores do talento ${talentId}:`, errorText)
+        throw new Error(`Erro ao buscar trabalhos anteriores: ${response.status} - ${errorText}`)
+      }
+      const data = await response.json()
+      console.log(`Trabalhos anteriores do talento ${talentId}:`, data)
+      return Array.isArray(data) ? data : []
+    } catch (error) {
+      console.error(`Erro ao buscar trabalhos anteriores do talento ${talentId}:`, error)
+      setError(error.message)
+      throw error
+    }
+  }
+
   // Buscar um trabalho anterior específico
   const fetchPreviousJobById = async (previousJobId) => {
     setError(null)
@@ -417,13 +485,17 @@ export const TalentProvider = ({ children }) => {
       const token = localStorage.getItem("token")
       if (!token) throw new Error("Token de autenticação não encontrado")
 
-      const response = await fetch(`https://megastage.onrender.com/api/v1/previous_jobs/${previousJobId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/${previousJobId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
         },
-      })
+      )
 
       if (!response.ok) throw new Error(`Erro ao buscar trabalho anterior: ${response.status}`)
 
@@ -450,7 +522,7 @@ export const TalentProvider = ({ children }) => {
         job_description: jobDescription,
       }
 
-      const response = await fetch("https://megastage.onrender.com/api/v1/previous_jobs/", {
+      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -489,14 +561,17 @@ export const TalentProvider = ({ children }) => {
         job_description: jobDescription,
       }
 
-      const response = await fetch(`https://megastage.onrender.com/api/v1/previous_jobs/${previousJobId}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/${previousJobId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
         },
-        body: JSON.stringify(requestData),
-      })
+      )
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
@@ -523,13 +598,16 @@ export const TalentProvider = ({ children }) => {
       const token = localStorage.getItem("token")
       if (!token) throw new Error("Token de autenticação não encontrado")
 
-      const response = await fetch(`https://megastage.onrender.com/api/v1/previous_jobs/${previousJobId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/${previousJobId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         },
-      })
+      )
 
       if (!response.ok) throw new Error(`Erro ao excluir trabalho anterior: ${response.status}`)
 
@@ -590,9 +668,11 @@ export const TalentProvider = ({ children }) => {
     deleteTalentPhoto,
     addTalentVideos,
     fetchTalentVideos,
+    fetchTalentVideosProxy, // Adicionando nova função proxy para vídeos
     deleteTalentVideo,
     // Funções de trabalhos anteriores
     fetchPreviousJobs,
+    fetchPreviousJobsProxy, // Adicionando nova função proxy para trabalhos anteriores
     fetchPreviousJobById,
     createPreviousJob,
     updatePreviousJob,

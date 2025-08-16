@@ -62,11 +62,12 @@ export const NotificationsProvider = ({ children }) => {
         throw new Error("Token de autenticação não encontrado")
       }
 
-      const response = await fetch("https://megastage.onrender.com/api/v1/notifications", {
+      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/notifications", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
         },
       })
 
@@ -237,11 +238,12 @@ export const NotificationsProvider = ({ children }) => {
       }
 
       // Usar a nova rota centralizada para marcar todas como lidas
-      const response = await fetch("https://megastage.onrender.com/api/v1/notifications/mark-all-read", {
+      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/notifications/mark-all-read", {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
         },
       })
 
@@ -297,11 +299,12 @@ export const NotificationsProvider = ({ children }) => {
       notificationsCache.current.data = updatedNotifications
 
       // Fazer a chamada à API
-      const response = await fetch(`https://megastage.onrender.com/api/v1/notifications/${id}/status`, {
+      const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/notifications/${id}/status`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
         },
         body: JSON.stringify({ status: "read" }), // Mantemos isso como está, pois já está correto
       })
@@ -353,11 +356,12 @@ export const NotificationsProvider = ({ children }) => {
       notificationsCache.current.data = updatedNotifications
 
       // Fazer a chamada à API para remover
-      const response = await fetch(`https://megastage.onrender.com/api/v1/notifications/${id}`, {
+      const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/notifications/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
         },
       })
 
@@ -395,11 +399,12 @@ export const NotificationsProvider = ({ children }) => {
       notificationsCache.current.data = []
 
       // Fazer a chamada à API para limpar todas
-      const response = await fetch("https://megastage.onrender.com/api/v1/notifications/clear-all", {
+      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/notifications/clear-all", {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
         },
       })
 
@@ -615,3 +620,5 @@ export const NotificationsProvider = ({ children }) => {
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>
 }
+
+

@@ -1,2762 +1,15 @@
-// import { useState, useEffect, useRef } from "react"
-// import { useTalent } from "../contexts/talents-context"
-// import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-// import {
-//   ChevronLeft,
-//   ChevronRight,
-//   Instagram,
-//   Loader2,
-//   Heart,
-//   Eye,
-//   Music,
-//   Languages,
-//   ArrowRight,
-//   Crown,
-// } from "lucide-react"
-
-// export default function TalentsGallery() {
-//   const { talents, loading, fetchTalentById, fetchTalentPhotos, fetchTalents, error } = useTalent()
-
-//   // State management
-//   const [selectedTalent, setSelectedTalent] = useState(null)
-//   const [currentIndex, setCurrentIndex] = useState(0)
-//   const [talentPhotos, setTalentPhotos] = useState({})
-//   const [loadingPhotos, setLoadingPhotos] = useState({})
-//   const [currentPhotoIndex, setCurrentPhotoIndex] = useState({})
-//   const [currentPage, setCurrentPage] = useState(1)
-//   const [itemsPerPage] = useState(12)
-//   const [viewMode, setViewMode] = useState("grid")
-//   const [filterType, setFilterType] = useState("all")
-//   const [genderFilter, setGenderFilter] = useState("all") // 'all', 'male', 'female'
-//   const [searchTerm, setSearchTerm] = useState("")
-//   const [favorites, setFavorites] = useState(new Set())
-//   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
-//   const [heroPhotoIndex, setHeroPhotoIndex] = useState(0)
-
-//   // Refs
-//   const heroRef = useRef(null)
-//   const containerRef = useRef(null)
-//   const { scrollYProgress } = useScroll({ target: containerRef })
-//   const heroY = useTransform(scrollYProgress, [0, 1], [0, -100])
-//   const heroOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0])
-
-//   // Auto-advance hero photos
-//   useEffect(() => {
-//     if (!selectedTalent || !talentPhotos[selectedTalent.id]?.length) return
-
-//     const interval = setInterval(() => {
-//       setHeroPhotoIndex((prev) => {
-//         const maxIndex = talentPhotos[selectedTalent.id].length - 1
-//         return prev >= maxIndex ? 0 : prev + 1
-//       })
-//     }, 4000)
-
-//     return () => clearInterval(interval)
-//   }, [selectedTalent, talentPhotos])
-
-//   // Determine gender based on name patterns (basic implementation)
-//   const determineGender = (name) => {
-//     const femaleEndings = ["a", "ana", "ina", "ela", "lia", "ria", "ica", "isa"]
-//     const maleEndings = ["o", "os", "an", "on", "el", "ar", "er", "ir"]
-
-//     const lowerName = name.toLowerCase()
-
-//     // Check female endings
-//     if (femaleEndings.some((ending) => lowerName.endsWith(ending))) {
-//       return "female"
-//     }
-
-//     // Check male endings
-//     if (maleEndings.some((ending) => lowerName.endsWith(ending))) {
-//       return "male"
-//     }
-
-//     // Default fallback
-//     return "unknown"
-//   }
-
-//   // Load talent photos
-//   const loadTalentPhotos = async (talentId) => {
-//     if (talentPhotos[talentId] || loadingPhotos[talentId]) return
-
-//     setLoadingPhotos((prev) => ({ ...prev, [talentId]: true }))
-
-//     try {
-//       const photos = await fetchTalentPhotos(talentId)
-
-//       if (Array.isArray(photos) && photos.length > 0) {
-//         const processedPhotos = photos
-//           .filter((photo) => photo.release)
-//           .map((photo) => ({
-//             ...photo,
-//             url: photo.image_url || "/placeholder.svg?height=800&width=600",
-//           }))
-
-//         setTalentPhotos((prev) => ({
-//           ...prev,
-//           [talentId]: processedPhotos,
-//         }))
-//       } else {
-//         setTalentPhotos((prev) => ({
-//           ...prev,
-//           [talentId]: [],
-//         }))
-//       }
-//     } catch (error) {
-//       console.error("Erro ao carregar fotos:", error)
-//       setTalentPhotos((prev) => ({
-//         ...prev,
-//         [talentId]: [],
-//       }))
-//     } finally {
-//       setLoadingPhotos((prev) => ({ ...prev, [talentId]: false }))
-//     }
-//   }
-
-//   // Load talent data
-//   const loadTalentData = async (talentId) => {
-//     try {
-//       const talent = await fetchTalentById(talentId)
-//       if (talent) {
-//         setSelectedTalent(talent)
-//         setHeroPhotoIndex(0)
-//         loadTalentPhotos(talentId)
-//       }
-//     } catch (error) {
-//       console.error("Erro ao carregar dados do talento:", error)
-//     }
-//   }
-
-//   // Initialize data
-//   useEffect(() => {
-//     const initializeData = async () => {
-//       try {
-//         if (talents.length > 0) {
-//           // Prioritize featured talents
-//           const featuredTalents = talents.filter((t) => t.destaque)
-//           const firstTalent = featuredTalents.length > 0 ? featuredTalents[0] : talents[0]
-
-//           setSelectedTalent(firstTalent)
-//           setCurrentIndex(talents.findIndex((t) => t.id === firstTalent.id))
-
-//           loadTalentPhotos(firstTalent.id)
-
-//           // Preload photos for featured talents first, then others
-//           const priorityTalents = [...featuredTalents, ...talents.filter((t) => !t.destaque)].slice(0, 8)
-//           priorityTalents.forEach((talent, index) => {
-//             setTimeout(() => loadTalentPhotos(talent.id), index * 150)
-//           })
-
-//           setInitialLoadComplete(true)
-//           return
-//         }
-
-//         const data = await fetchTalents()
-//         if (data && data.length > 0) {
-//           const featuredTalents = data.filter((t) => t.destaque)
-//           const firstTalent = featuredTalents.length > 0 ? featuredTalents[0] : data[0]
-
-//           setSelectedTalent(firstTalent)
-//           setCurrentIndex(data.findIndex((t) => t.id === firstTalent.id))
-//           loadTalentPhotos(firstTalent.id)
-
-//           const priorityTalents = [...featuredTalents, ...data.filter((t) => !t.destaque)].slice(0, 8)
-//           priorityTalents.forEach((talent, index) => {
-//             setTimeout(() => loadTalentPhotos(talent.id), index * 150)
-//           })
-//         }
-
-//         setInitialLoadComplete(true)
-//       } catch (err) {
-//         console.error("Erro ao inicializar dados:", err)
-//         setInitialLoadComplete(true)
-//       }
-//     }
-
-//     initializeData()
-//   }, [talents, fetchTalents])
-
-//   // Filter talents by gender and other criteria
-//   const filteredTalents = talents.filter((talent) => {
-//     const matchesSearch = talent.name.toLowerCase().includes(searchTerm.toLowerCase())
-//     const matchesFilter =
-//       filterType === "all" ||
-//       (filterType === "destacados" && talent.destaque) ||
-//       (filterType === "disponivel" && talent.disponivel) ||
-//       (filterType === "ativo" && talent.ativo)
-
-//     const gender = determineGender(talent.name)
-//     const matchesGender =
-//       genderFilter === "all" ||
-//       (genderFilter === "male" && gender === "male") ||
-//       (genderFilter === "female" && gender === "female")
-
-//     return matchesSearch && matchesFilter && matchesGender
-//   })
-
-//   // Separate by gender for display
-//   const maleTalents = filteredTalents.filter((talent) => determineGender(talent.name) === "male")
-//   const femaleTalents = filteredTalents.filter((talent) => determineGender(talent.name) === "female")
-//   const featuredTalents = filteredTalents.filter((talent) => talent.destaque)
-
-//   // Navigation handlers
-//   const handlePrevious = () => {
-//     if (talents.length === 0) return
-//     const newIndex = currentIndex > 0 ? currentIndex - 1 : talents.length - 1
-//     setCurrentIndex(newIndex)
-//     const talent = talents[newIndex]
-//     setSelectedTalent(talent)
-//     loadTalentPhotos(talent.id)
-//   }
-
-//   const handleNext = () => {
-//     if (talents.length === 0) return
-//     const newIndex = currentIndex < talents.length - 1 ? currentIndex + 1 : 0
-//     setCurrentIndex(newIndex)
-//     const talent = talents[newIndex]
-//     setSelectedTalent(talent)
-//     loadTalentPhotos(talent.id)
-//   }
-
-//   const handleTalentClick = (talent) => {
-//     const talentIndex = talents.findIndex((t) => t.id === talent.id)
-//     setCurrentIndex(talentIndex)
-//     setSelectedTalent(talent)
-//     loadTalentPhotos(talent.id)
-//     heroRef.current?.scrollIntoView({ behavior: "smooth" })
-//   }
-
-//   const toggleFavorite = (talentId) => {
-//     setFavorites((prev) => {
-//       const newFavorites = new Set(prev)
-//       if (newFavorites.has(talentId)) {
-//         newFavorites.delete(talentId)
-//       } else {
-//         newFavorites.add(talentId)
-//       }
-//       return newFavorites
-//     })
-//   }
-
-//   // Loading state
-//   if (loading && !initialLoadComplete && talents.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-black flex items-center justify-center">
-//         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-//           <div className="relative mb-8">
-//             <div className="w-20 h-20 border-2 border-amber-400 rounded-full animate-spin border-t-transparent mx-auto"></div>
-//             <Crown className="w-8 h-8 text-amber-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-//           </div>
-//           <p className="text-white font-light tracking-wider">CARREGANDO TALENTOS EXCLUSIVOS</p>
-//         </motion.div>
-//       </div>
-//     )
-//   }
-
-//   if (initialLoadComplete && talents.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-black flex items-center justify-center">
-//         <motion.div
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           className="text-center max-w-md mx-auto p-8"
-//         >
-//           <Crown className="w-16 h-16 text-amber-400 mx-auto mb-6" />
-//           <h2 className="text-2xl font-light text-white mb-2 tracking-wider">NENHUM TALENTO ENCONTRADO</h2>
-//           <p className="text-gray-400">{error ? `Erro: ${error}` : "Não há talentos disponíveis no momento."}</p>
-//         </motion.div>
-//       </div>
-//     )
-//   }
-
-//   const currentTalent = selectedTalent || (talents.length > 0 ? talents[0] : null)
-
-//   if (!currentTalent) {
-//     return (
-//       <div className="min-h-screen bg-black flex items-center justify-center">
-//         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-//           <Loader2 className="w-12 h-12 animate-spin text-amber-400 mx-auto mb-4" />
-//           <p className="text-white font-light tracking-wider">PREPARANDO GALERIA</p>
-//         </motion.div>
-//       </div>
-//     )
-//   }
-
-//   const currentTalentPhotos = talentPhotos[currentTalent.id] || []
-//   const currentHeroPhoto = currentTalentPhotos[heroPhotoIndex] || {}
-
-//   return (
-//     <div ref={containerRef} className="min-h-screen bg-black text-white">
-//       {/* Hero Section - Fashion Magazine Style */}
-//       <motion.div
-//         ref={heroRef}
-//         style={{ y: heroY, opacity: heroOpacity }}
-//         className="relative h-screen overflow-hidden"
-//       >
-//         <AnimatePresence mode="wait">
-//           <motion.div
-//             key={`${currentTalent.id}-${heroPhotoIndex}`}
-//             initial={{ opacity: 0, scale: 1.1 }}
-//             animate={{ opacity: 1, scale: 1 }}
-//             exit={{ opacity: 0, scale: 0.95 }}
-//             transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-//             className="absolute inset-0"
-//           >
-//             {/* Background Image */}
-//             <div className="absolute inset-0">
-//               <img
-//                 src={
-//                   currentHeroPhoto.url ||
-//                   currentTalent.cover ||
-//                   "/placeholder.svg?height=1080&width=1920&query=high+fashion+portrait+studio+lighting" ||
-//                   "/placeholder.svg"
-//                 }
-//                 alt={currentTalent.name}
-//                 className="w-full h-full object-cover"
-//                 onError={(e) => {
-//                   e.target.src = "/placeholder.svg?height=1080&width=1920"
-//                 }}
-//               />
-//               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-//               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
-//             </div>
-
-//             {/* Content Overlay */}
-//             <div className="relative z-10 h-full flex items-center">
-//               <div className="max-w-7xl mx-auto px-8 w-full">
-//                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-//                   {/* Left Content */}
-//                   <motion.div
-//                     initial={{ opacity: 0, x: -50 }}
-//                     animate={{ opacity: 1, x: 0 }}
-//                     transition={{ delay: 0.3, duration: 0.8 }}
-//                     className="space-y-8"
-//                   >
-//                     {/* Featured Badge */}
-//                     {currentTalent.destaque && (
-//                       <motion.div
-//                         initial={{ scale: 0, rotate: -10 }}
-//                         animate={{ scale: 1, rotate: 0 }}
-//                         transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-//                         className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-black px-6 py-3 rounded-none font-bold text-sm tracking-wider"
-//                       >
-//                         <Crown className="w-5 h-5" />
-//                         TALENTO EXCLUSIVO
-//                       </motion.div>
-//                     )}
-
-//                     {/* Name */}
-//                     <div>
-//                       <motion.h1
-//                         initial={{ opacity: 0, y: 30 }}
-//                         animate={{ opacity: 1, y: 0 }}
-//                         transition={{ delay: 0.4, duration: 0.8 }}
-//                         className="text-6xl md:text-8xl font-thin tracking-tight leading-none mb-4"
-//                       >
-//                         {currentTalent.name.split(" ")[0]}
-//                       </motion.h1>
-//                       {currentTalent.name.split(" ").length > 1 && (
-//                         <motion.h2
-//                           initial={{ opacity: 0, y: 30 }}
-//                           animate={{ opacity: 1, y: 0 }}
-//                           transition={{ delay: 0.6, duration: 0.8 }}
-//                           className="text-4xl md:text-6xl font-light tracking-wider text-gray-300"
-//                         >
-//                           {currentTalent.name.split(" ").slice(1).join(" ")}
-//                         </motion.h2>
-//                       )}
-//                     </div>
-
-//                     {/* Details */}
-//                     <motion.div
-//                       initial={{ opacity: 0, y: 20 }}
-//                       animate={{ opacity: 1, y: 0 }}
-//                       transition={{ delay: 0.8, duration: 0.6 }}
-//                       className="flex flex-wrap gap-6 text-sm tracking-wider"
-//                     >
-//                       {currentTalent.birth_date && (
-//                         <div className="flex items-center gap-2 text-gray-300">
-//                           <div className="w-px h-4 bg-amber-400"></div>
-//                           <span>
-//                             {new Date().getFullYear() - new Date(currentTalent.birth_date).getFullYear()} ANOS
-//                           </span>
-//                         </div>
-//                       )}
-//                       {currentTalent.height && (
-//                         <div className="flex items-center gap-2 text-gray-300">
-//                           <div className="w-px h-4 bg-amber-400"></div>
-//                           <span>{currentTalent.height}</span>
-//                         </div>
-//                       )}
-//                       {currentTalent.tipo_talento && (
-//                         <div className="flex items-center gap-2 text-gray-300">
-//                           <div className="w-px h-4 bg-amber-400"></div>
-//                           <span>{currentTalent.tipo_talento.toUpperCase()}</span>
-//                         </div>
-//                       )}
-//                     </motion.div>
-
-//                     {/* Instagram */}
-//                     {currentTalent.instagram && (
-//                       <motion.a
-//                         initial={{ opacity: 0, scale: 0.8 }}
-//                         animate={{ opacity: 1, scale: 1 }}
-//                         transition={{ delay: 1, duration: 0.6 }}
-//                         href={`https://instagram.com/${currentTalent.instagram.replace(/^@/, "")}`}
-//                         target="_blank"
-//                         rel="noopener noreferrer"
-//                         className="inline-flex items-center gap-3 border border-white/30 hover:border-amber-400 px-6 py-3 transition-all duration-300 group"
-//                       >
-//                         <Instagram className="w-5 h-5 group-hover:text-amber-400 transition-colors" />
-//                         <span className="tracking-wider">@{currentTalent.instagram}</span>
-//                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-//                       </motion.a>
-//                     )}
-//                   </motion.div>
-
-//                   {/* Right Content - Stats */}
-//                   <motion.div
-//                     initial={{ opacity: 0, x: 50 }}
-//                     animate={{ opacity: 1, x: 0 }}
-//                     transition={{ delay: 0.5, duration: 0.8 }}
-//                     className="space-y-8 lg:text-right"
-//                   >
-//                     {/* Photo Counter */}
-//                     {currentTalentPhotos.length > 0 && (
-//                       <div className="text-right">
-//                         <div className="text-4xl font-thin text-amber-400 mb-2">
-//                           {String(heroPhotoIndex + 1).padStart(2, "0")}
-//                         </div>
-//                         <div className="text-sm tracking-wider text-gray-400">
-//                           DE {String(currentTalentPhotos.length).padStart(2, "0")} FOTOS
-//                         </div>
-//                       </div>
-//                     )}
-
-//                     {/* Skills */}
-//                     <div className="space-y-4">
-//                       {currentTalent.can_sing && (
-//                         <div className="flex items-center justify-end gap-3">
-//                           <span className="text-sm tracking-wider">CANTO</span>
-//                           <Music className="w-4 h-4 text-amber-400" />
-//                         </div>
-//                       )}
-//                       {currentTalent.languages && currentTalent.languages.length > 0 && (
-//                         <div className="flex items-center justify-end gap-3">
-//                           <span className="text-sm tracking-wider">{currentTalent.languages.length} IDIOMAS</span>
-//                           <Languages className="w-4 h-4 text-amber-400" />
-//                         </div>
-//                       )}
-//                       {currentTalent.instruments && currentTalent.instruments.length > 0 && (
-//                         <div className="flex items-center justify-end gap-3">
-//                           <span className="text-sm tracking-wider">
-//                             {currentTalent.instruments.length} INSTRUMENTOS
-//                           </span>
-//                           <Music className="w-4 h-4 text-amber-400" />
-//                         </div>
-//                       )}
-//                     </div>
-//                   </motion.div>
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Navigation */}
-//             <div className="absolute inset-y-0 left-0 flex items-center z-20">
-//               <motion.button
-//                 whileHover={{ scale: 1.1, x: -5 }}
-//                 whileTap={{ scale: 0.9 }}
-//                 onClick={handlePrevious}
-//                 className="ml-8 w-12 h-12 border border-white/30 hover:border-amber-400 hover:bg-amber-400/10 transition-all duration-300 flex items-center justify-center"
-//               >
-//                 <ChevronLeft className="w-6 h-6" />
-//               </motion.button>
-//             </div>
-
-//             <div className="absolute inset-y-0 right-0 flex items-center z-20">
-//               <motion.button
-//                 whileHover={{ scale: 1.1, x: 5 }}
-//                 whileTap={{ scale: 0.9 }}
-//                 onClick={handleNext}
-//                 className="mr-8 w-12 h-12 border border-white/30 hover:border-amber-400 hover:bg-amber-400/10 transition-all duration-300 flex items-center justify-center"
-//               >
-//                 <ChevronRight className="w-6 h-6" />
-//               </motion.button>
-//             </div>
-
-//             {/* Photo Progress */}
-//             {currentTalentPhotos.length > 1 && (
-//               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-//                 <div className="flex gap-2">
-//                   {currentTalentPhotos.map((_, idx) => (
-//                     <motion.button
-//                       key={idx}
-//                       whileHover={{ scale: 1.2 }}
-//                       onClick={() => setHeroPhotoIndex(idx)}
-//                       className={`w-8 h-px transition-all duration-300 ${
-//                         heroPhotoIndex === idx ? "bg-amber-400" : "bg-white/30 hover:bg-white/50"
-//                       }`}
-//                     />
-//                   ))}
-//                 </div>
-//               </div>
-//             )}
-//           </motion.div>
-//         </AnimatePresence>
-//       </motion.div>
-
-//       {/* Featured Talents Section */}
-//       {featuredTalents.length > 0 && (
-//         <section className="py-24 bg-gradient-to-b from-black to-gray-900">
-//           <div className="max-w-7xl mx-auto px-8">
-//             <motion.div
-//               initial={{ opacity: 0, y: 30 }}
-//               whileInView={{ opacity: 1, y: 0 }}
-//               transition={{ duration: 0.8 }}
-//               viewport={{ once: true }}
-//               className="text-center mb-16"
-//             >
-//               <h2 className="text-4xl md:text-6xl font-thin tracking-wider mb-4">
-//                 TALENTOS <span className="text-amber-400">EXCLUSIVOS</span>
-//               </h2>
-//               <div className="w-24 h-px bg-amber-400 mx-auto"></div>
-//             </motion.div>
-
-//             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-//               {featuredTalents.slice(0, 6).map((talent, index) => {
-//                 const mainPhoto = talentPhotos[talent.id]?.[0] || {}
-//                 return (
-//                   <motion.div
-//                     key={talent.id}
-//                     initial={{ opacity: 0, y: 50 }}
-//                     whileInView={{ opacity: 1, y: 0 }}
-//                     transition={{ duration: 0.6, delay: index * 0.1 }}
-//                     viewport={{ once: true }}
-//                     whileHover={{ y: -10 }}
-//                     className="group cursor-pointer"
-//                     onClick={() => handleTalentClick(talent)}
-//                   >
-//                     <div className="relative aspect-[3/4] overflow-hidden mb-6">
-//                       <img
-//                         src={
-//                           mainPhoto.url ||
-//                           talent.cover ||
-//                           "/placeholder.svg?height=600&width=450&query=fashion+model+portrait" ||
-//                           "/placeholder.svg"
-//                         }
-//                         alt={talent.name}
-//                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-//                         onError={(e) => {
-//                           e.target.src = "/placeholder.svg?height=600&width=450"
-//                         }}
-//                       />
-//                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-//                       {/* Crown badge */}
-//                       <div className="absolute top-4 right-4">
-//                         <Crown className="w-6 h-6 text-amber-400" />
-//                       </div>
-
-//                       {/* Hover overlay */}
-//                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-//                         <div className="w-12 h-12 border border-white/50 flex items-center justify-center">
-//                           <Eye className="w-6 h-6" />
-//                         </div>
-//                       </div>
-//                     </div>
-
-//                     <div className="text-center">
-//                       <h3 className="text-2xl font-light tracking-wider mb-2 group-hover:text-amber-400 transition-colors">
-//                         {talent.name}
-//                       </h3>
-//                       <p className="text-gray-400 text-sm tracking-wider">
-//                         {talent.tipo_talento?.toUpperCase() || "TALENTO"}
-//                       </p>
-//                     </div>
-//                   </motion.div>
-//                 )
-//               })}
-//             </div>
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Gender Sections */}
-//       <section className="py-24 bg-gray-900">
-//         <div className="max-w-7xl mx-auto px-8">
-//           {/* Filters */}
-//           <motion.div
-//             initial={{ opacity: 0, y: 30 }}
-//             whileInView={{ opacity: 1, y: 0 }}
-//             transition={{ duration: 0.6 }}
-//             viewport={{ once: true }}
-//             className="flex flex-col md:flex-row gap-8 items-center justify-between mb-16"
-//           >
-//             <div className="flex items-center gap-8">
-//               <div className="relative">
-//                 <input
-//                   type="text"
-//                   placeholder="BUSCAR TALENTOS..."
-//                   value={searchTerm}
-//                   onChange={(e) => setSearchTerm(e.target.value)}
-//                   className="bg-transparent border-b border-white/30 focus:border-amber-400 px-0 py-3 text-white placeholder-gray-400 focus:outline-none transition-colors tracking-wider"
-//                 />
-//               </div>
-
-//               <select
-//                 value={filterType}
-//                 onChange={(e) => setFilterType(e.target.value)}
-//                 className="bg-transparent border-b border-white/30 focus:border-amber-400 px-0 py-3 text-white focus:outline-none transition-colors tracking-wider"
-//               >
-//                 <option value="all" className="bg-gray-900">
-//                   TODOS
-//                 </option>
-//                 <option value="destacados" className="bg-gray-900">
-//                   DESTAQUES
-//                 </option>
-//                 <option value="disponivel" className="bg-gray-900">
-//                   DISPONÍVEIS
-//                 </option>
-//                 <option value="ativo" className="bg-gray-900">
-//                   ATIVOS
-//                 </option>
-//               </select>
-//             </div>
-
-//             <div className="flex items-center gap-4">
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={() => setGenderFilter("all")}
-//                 className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-//                   genderFilter === "all"
-//                     ? "border-amber-400 text-amber-400"
-//                     : "border-white/30 text-white hover:border-white/50"
-//                 }`}
-//               >
-//                 TODOS
-//               </motion.button>
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={() => setGenderFilter("female")}
-//                 className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-//                   genderFilter === "female"
-//                     ? "border-amber-400 text-amber-400"
-//                     : "border-white/30 text-white hover:border-white/50"
-//                 }`}
-//               >
-//                 FEMININO
-//               </motion.button>
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={() => setGenderFilter("male")}
-//                 className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-//                   genderFilter === "male"
-//                     ? "border-amber-400 text-amber-400"
-//                     : "border-white/30 text-white hover:border-white/50"
-//                 }`}
-//               >
-//                 MASCULINO
-//               </motion.button>
-//             </div>
-//           </motion.div>
-
-//           {/* Female Talents */}
-//           {(genderFilter === "all" || genderFilter === "female") && femaleTalents.length > 0 && (
-//             <div className="mb-24">
-//               <motion.div
-//                 initial={{ opacity: 0, x: -30 }}
-//                 whileInView={{ opacity: 1, x: 0 }}
-//                 transition={{ duration: 0.8 }}
-//                 viewport={{ once: true }}
-//                 className="flex items-center gap-4 mb-12"
-//               >
-//                 <h3 className="text-3xl md:text-4xl font-thin tracking-wider">FEMININO</h3>
-//                 <div className="flex-1 h-px bg-gradient-to-r from-pink-400 to-transparent"></div>
-//                 <span className="text-pink-400 text-sm tracking-wider">{femaleTalents.length} TALENTOS</span>
-//               </motion.div>
-
-//               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-//                 {femaleTalents.map((talent, index) => {
-//                   const mainPhoto = talentPhotos[talent.id]?.[0] || {}
-//                   return (
-//                     <motion.div
-//                       key={talent.id}
-//                       initial={{ opacity: 0, y: 30 }}
-//                       whileInView={{ opacity: 1, y: 0 }}
-//                       transition={{ duration: 0.5, delay: index * 0.05 }}
-//                       viewport={{ once: true }}
-//                       whileHover={{ y: -5, scale: 1.02 }}
-//                       className="group cursor-pointer"
-//                       onClick={() => handleTalentClick(talent)}
-//                     >
-//                       <div className="relative aspect-[3/4] overflow-hidden mb-4">
-//                         <img
-//                           src={
-//                             mainPhoto.url ||
-//                             talent.cover ||
-//                             "/placeholder.svg?height=400&width=300&query=female+model+portrait" ||
-//                             "/placeholder.svg"
-//                           }
-//                           alt={talent.name}
-//                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-//                           onError={(e) => {
-//                             e.target.src = "/placeholder.svg?height=400&width=300"
-//                           }}
-//                         />
-//                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-//                         {talent.destaque && (
-//                           <div className="absolute top-3 right-3">
-//                             <Crown className="w-4 h-4 text-amber-400" />
-//                           </div>
-//                         )}
-
-//                         {/* Favorite button */}
-//                         <motion.button
-//                           whileHover={{ scale: 1.1 }}
-//                           whileTap={{ scale: 0.9 }}
-//                           onClick={(e) => {
-//                             e.stopPropagation()
-//                             toggleFavorite(talent.id)
-//                           }}
-//                           className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 ${
-//                             favorites.has(talent.id)
-//                               ? "bg-red-500 text-white"
-//                               : "bg-white/20 text-white hover:bg-white/30"
-//                           }`}
-//                         >
-//                           <Heart className={`w-4 h-4 ${favorites.has(talent.id) ? "fill-current" : ""}`} />
-//                         </motion.button>
-//                       </div>
-
-//                       <div className="text-center">
-//                         <h4 className="font-light tracking-wider mb-1 group-hover:text-pink-400 transition-colors">
-//                           {talent.name}
-//                         </h4>
-//                         <p className="text-gray-400 text-xs tracking-wider">
-//                           {talent.birth_date
-//                             ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
-//                             : ""}
-//                         </p>
-//                       </div>
-//                     </motion.div>
-//                   )
-//                 })}
-//               </div>
-//             </div>
-//           )}
-
-//           {/* Male Talents */}
-//           {(genderFilter === "all" || genderFilter === "male") && maleTalents.length > 0 && (
-//             <div>
-//               <motion.div
-//                 initial={{ opacity: 0, x: -30 }}
-//                 whileInView={{ opacity: 1, x: 0 }}
-//                 transition={{ duration: 0.8 }}
-//                 viewport={{ once: true }}
-//                 className="flex items-center gap-4 mb-12"
-//               >
-//                 <h3 className="text-3xl md:text-4xl font-thin tracking-wider">MASCULINO</h3>
-//                 <div className="flex-1 h-px bg-gradient-to-r from-blue-400 to-transparent"></div>
-//                 <span className="text-blue-400 text-sm tracking-wider">{maleTalents.length} TALENTOS</span>
-//               </motion.div>
-
-//               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-//                 {maleTalents.map((talent, index) => {
-//                   const mainPhoto = talentPhotos[talent.id]?.[0] || {}
-//                   return (
-//                     <motion.div
-//                       key={talent.id}
-//                       initial={{ opacity: 0, y: 30 }}
-//                       whileInView={{ opacity: 1, y: 0 }}
-//                       transition={{ duration: 0.5, delay: index * 0.05 }}
-//                       viewport={{ once: true }}
-//                       whileHover={{ y: -5, scale: 1.02 }}
-//                       className="group cursor-pointer"
-//                       onClick={() => handleTalentClick(talent)}
-//                     >
-//                       <div className="relative aspect-[3/4] overflow-hidden mb-4">
-//                         <img
-//                           src={
-//                             mainPhoto.url ||
-//                             talent.cover ||
-//                             "/placeholder.svg?height=400&width=300&query=male+model+portrait" ||
-//                             "/placeholder.svg"
-//                           }
-//                           alt={talent.name}
-//                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-//                           onError={(e) => {
-//                             e.target.src = "/placeholder.svg?height=400&width=300"
-//                           }}
-//                         />
-//                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-//                         {talent.destaque && (
-//                           <div className="absolute top-3 right-3">
-//                             <Crown className="w-4 h-4 text-amber-400" />
-//                           </div>
-//                         )}
-
-//                         {/* Favorite button */}
-//                         <motion.button
-//                           whileHover={{ scale: 1.1 }}
-//                           whileTap={{ scale: 0.9 }}
-//                           onClick={(e) => {
-//                             e.stopPropagation()
-//                             toggleFavorite(talent.id)
-//                           }}
-//                           className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 ${
-//                             favorites.has(talent.id)
-//                               ? "bg-red-500 text-white"
-//                               : "bg-white/20 text-white hover:bg-white/30"
-//                           }`}
-//                         >
-//                           <Heart className={`w-4 h-4 ${favorites.has(talent.id) ? "fill-current" : ""}`} />
-//                         </motion.button>
-//                       </div>
-
-//                       <div className="text-center">
-//                         <h4 className="font-light tracking-wider mb-1 group-hover:text-blue-400 transition-colors">
-//                           {talent.name}
-//                         </h4>
-//                         <p className="text-gray-400 text-xs tracking-wider">
-//                           {talent.birth_date
-//                             ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
-//                             : ""}
-//                         </p>
-//                       </div>
-//                     </motion.div>
-//                   )
-//                 })}
-//               </div>
-//             </div>
-//           )}
-//         </div>
-//       </section>
-//     </div>
-//   )
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// "use client"
-
-// import { useState, useEffect, useRef } from "react"
-// import { useTalent } from "../contexts/talents-context"
-// import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-// import {
-//   ChevronLeft,
-//   ChevronRight,
-//   Instagram,
-//   Loader2,
-//   Heart,
-//   Eye,
-//   Music,
-//   Languages,
-//   ArrowRight,
-//   Crown,
-//   Camera,
-// } from "lucide-react"
-
-// export default function TalentsGallery() {
-//   const { talents, loading, fetchTalentById, fetchTalentPhotos, fetchTalents, error } = useTalent()
-
-//   // State management
-//   const [selectedTalent, setSelectedTalent] = useState(null)
-//   const [currentIndex, setCurrentIndex] = useState(0)
-//   const [talentPhotos, setTalentPhotos] = useState({})
-//   const [loadingPhotos, setLoadingPhotos] = useState({})
-//   const [currentPhotoIndex, setCurrentPhotoIndex] = useState({})
-//   const [currentPage, setCurrentPage] = useState(1)
-//   const [itemsPerPage] = useState(12)
-//   const [viewMode, setViewMode] = useState("grid")
-//   const [filterType, setFilterType] = useState("all")
-//   const [genderFilter, setGenderFilter] = useState("all") // 'all', 'male', 'female'
-//   const [searchTerm, setSearchTerm] = useState("")
-//   const [favorites, setFavorites] = useState(new Set())
-//   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
-//   const [heroPhotoIndex, setHeroPhotoIndex] = useState(0)
-
-//   // Refs
-//   const heroRef = useRef(null)
-//   const containerRef = useRef(null)
-//   const { scrollYProgress } = useScroll({ target: containerRef })
-//   const heroY = useTransform(scrollYProgress, [0, 1], [0, -100])
-//   const heroOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0])
-
-//   // Auto-advance hero photos
-//   useEffect(() => {
-//     if (!selectedTalent || !talentPhotos[selectedTalent.id]?.length) return
-
-//     const interval = setInterval(() => {
-//       setHeroPhotoIndex((prev) => {
-//         const maxIndex = talentPhotos[selectedTalent.id].length - 1
-//         return prev >= maxIndex ? 0 : prev + 1
-//       })
-//     }, 4000)
-
-//     return () => clearInterval(interval)
-//   }, [selectedTalent, talentPhotos])
-
-//   // Determine gender based on name patterns (basic implementation)
-//   const determineGender = (name) => {
-//     const femaleEndings = ["a", "ana", "ina", "ela", "lia", "ria", "ica", "isa", "ane", "ene", "ine"]
-//     const maleEndings = ["o", "os", "an", "on", "el", "ar", "er", "ir", "or", "ur"]
-
-//     const lowerName = name.toLowerCase()
-
-//     // Check female endings
-//     if (femaleEndings.some((ending) => lowerName.endsWith(ending))) {
-//       return "female"
-//     }
-
-//     // Check male endings
-//     if (maleEndings.some((ending) => lowerName.endsWith(ending))) {
-//       return "male"
-//     }
-
-//     // Default fallback
-//     return "unknown"
-//   }
-
-//   // Load talent photos - CORRIGIDO para usar apenas fotos da API
-//   const loadTalentPhotos = async (talentId) => {
-//     if (talentPhotos[talentId] || loadingPhotos[talentId]) return
-
-//     setLoadingPhotos((prev) => ({ ...prev, [talentId]: true }))
-
-//     try {
-//       console.log(`Carregando fotos para talento ID: ${talentId}`)
-//       const photos = await fetchTalentPhotos(talentId)
-//       console.log(`Fotos recebidas para talento ${talentId}:`, photos)
-
-//       if (Array.isArray(photos) && photos.length > 0) {
-//         // Filtrar apenas fotos com release=true e processar URLs
-//         const processedPhotos = photos
-//           .filter((photo) => photo.release === true)
-//           .map((photo) => ({
-//             id: photo.id,
-//             talent_id: photo.talent_id,
-//             url: photo.image_url, // Usar image_url diretamente da API
-//             public_id: photo.public_id,
-//             short_url: photo.short_url,
-//           }))
-
-//         console.log(`Fotos processadas para talento ${talentId}:`, processedPhotos)
-
-//         setTalentPhotos((prev) => ({
-//           ...prev,
-//           [talentId]: processedPhotos,
-//         }))
-//       } else {
-//         console.log(`Nenhuma foto encontrada para talento ${talentId}`)
-//         setTalentPhotos((prev) => ({
-//           ...prev,
-//           [talentId]: [],
-//         }))
-//       }
-//     } catch (error) {
-//       console.error(`Erro ao carregar fotos do talento ${talentId}:`, error)
-//       setTalentPhotos((prev) => ({
-//         ...prev,
-//         [talentId]: [],
-//       }))
-//     } finally {
-//       setLoadingPhotos((prev) => ({ ...prev, [talentId]: false }))
-//     }
-//   }
-
-//   // Load talent data
-//   const loadTalentData = async (talentId) => {
-//     try {
-//       const talent = await fetchTalentById(talentId)
-//       if (talent) {
-//         setSelectedTalent(talent)
-//         setHeroPhotoIndex(0)
-//         await loadTalentPhotos(talentId)
-//       }
-//     } catch (error) {
-//       console.error("Erro ao carregar dados do talento:", error)
-//     }
-//   }
-
-//   // Initialize data
-//   useEffect(() => {
-//     const initializeData = async () => {
-//       try {
-//         if (talents.length > 0) {
-//           console.log("Inicializando com talentos existentes:", talents.length)
-
-//           // Prioritize featured talents
-//           const featuredTalents = talents.filter((t) => t.destaque)
-//           const firstTalent = featuredTalents.length > 0 ? featuredTalents[0] : talents[0]
-
-//           console.log("Primeiro talento selecionado:", firstTalent)
-//           setSelectedTalent(firstTalent)
-//           setCurrentIndex(talents.findIndex((t) => t.id === firstTalent.id))
-
-//           // Carregar fotos do primeiro talento
-//           await loadTalentPhotos(firstTalent.id)
-
-//           // Preload photos for featured talents first, then others
-//           const priorityTalents = [...featuredTalents, ...talents.filter((t) => !t.destaque)].slice(0, 10)
-
-//           // Carregar fotos em paralelo com delay escalonado
-//           priorityTalents.forEach((talent, index) => {
-//             setTimeout(() => {
-//               console.log(`Pré-carregando fotos do talento: ${talent.name} (ID: ${talent.id})`)
-//               loadTalentPhotos(talent.id)
-//             }, index * 200)
-//           })
-
-//           setInitialLoadComplete(true)
-//           return
-//         }
-
-//         console.log("Buscando talentos da API...")
-//         const data = await fetchTalents()
-//         if (data && data.length > 0) {
-//           console.log("Talentos carregados da API:", data.length)
-
-//           const featuredTalents = data.filter((t) => t.destaque)
-//           const firstTalent = featuredTalents.length > 0 ? featuredTalents[0] : data[0]
-
-//           setSelectedTalent(firstTalent)
-//           setCurrentIndex(data.findIndex((t) => t.id === firstTalent.id))
-//           await loadTalentPhotos(firstTalent.id)
-
-//           const priorityTalents = [...featuredTalents, ...data.filter((t) => !t.destaque)].slice(0, 10)
-//           priorityTalents.forEach((talent, index) => {
-//             setTimeout(() => loadTalentPhotos(talent.id), index * 200)
-//           })
-//         }
-
-//         setInitialLoadComplete(true)
-//       } catch (err) {
-//         console.error("Erro ao inicializar dados:", err)
-//         setInitialLoadComplete(true)
-//       }
-//     }
-
-//     initializeData()
-//   }, [talents, fetchTalents])
-
-//   // Filter talents by gender and other criteria
-//   const filteredTalents = talents.filter((talent) => {
-//     const matchesSearch = talent.name.toLowerCase().includes(searchTerm.toLowerCase())
-//     const matchesFilter =
-//       filterType === "all" ||
-//       (filterType === "destacados" && talent.destaque) ||
-//       (filterType === "disponivel" && talent.disponivel) ||
-//       (filterType === "ativo" && talent.ativo)
-
-//     const gender = determineGender(talent.name)
-//     const matchesGender =
-//       genderFilter === "all" ||
-//       (genderFilter === "male" && gender === "male") ||
-//       (genderFilter === "female" && gender === "female")
-
-//     return matchesSearch && matchesFilter && matchesGender
-//   })
-
-//   // Separate by gender for display
-//   const maleTalents = filteredTalents.filter((talent) => determineGender(talent.name) === "male")
-//   const femaleTalents = filteredTalents.filter((talent) => determineGender(talent.name) === "female")
-//   const featuredTalents = filteredTalents.filter((talent) => talent.destaque)
-
-//   // Navigation handlers
-//   const handlePrevious = () => {
-//     if (talents.length === 0) return
-//     const newIndex = currentIndex > 0 ? currentIndex - 1 : talents.length - 1
-//     setCurrentIndex(newIndex)
-//     const talent = talents[newIndex]
-//     setSelectedTalent(talent)
-//     loadTalentPhotos(talent.id)
-//   }
-
-//   const handleNext = () => {
-//     if (talents.length === 0) return
-//     const newIndex = currentIndex < talents.length - 1 ? currentIndex + 1 : 0
-//     setCurrentIndex(newIndex)
-//     const talent = talents[newIndex]
-//     setSelectedTalent(talent)
-//     loadTalentPhotos(talent.id)
-//   }
-
-//   const handleTalentClick = (talent) => {
-//     const talentIndex = talents.findIndex((t) => t.id === talent.id)
-//     setCurrentIndex(talentIndex)
-//     setSelectedTalent(talent)
-//     loadTalentPhotos(talent.id)
-//     heroRef.current?.scrollIntoView({ behavior: "smooth" })
-//   }
-
-//   const toggleFavorite = (talentId) => {
-//     setFavorites((prev) => {
-//       const newFavorites = new Set(prev)
-//       if (newFavorites.has(talentId)) {
-//         newFavorites.delete(talentId)
-//       } else {
-//         newFavorites.add(talentId)
-//       }
-//       return newFavorites
-//     })
-//   }
-
-//   // Get main photo for talent (first photo from API)
-//   const getTalentMainPhoto = (talentId) => {
-//     const photos = talentPhotos[talentId]
-//     if (photos && photos.length > 0) {
-//       return photos[0].url
-//     }
-//     return "/placeholder.svg?height=600&width=450"
-//   }
-
-//   // Loading state - FUNDO CLARO
-//   if (loading && !initialLoadComplete && talents.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-//         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-//           <div className="relative mb-8">
-//             <div className="w-20 h-20 border-2 border-amber-500 rounded-full animate-spin border-t-transparent mx-auto"></div>
-//             <Crown className="w-8 h-8 text-amber-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-//           </div>
-//           <p className="text-gray-800 font-light tracking-wider">CARREGANDO TALENTOS EXCLUSIVOS</p>
-//         </motion.div>
-//       </div>
-//     )
-//   }
-
-//   if (initialLoadComplete && talents.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-//         <motion.div
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           className="text-center max-w-md mx-auto p-8"
-//         >
-//           <Crown className="w-16 h-16 text-amber-500 mx-auto mb-6" />
-//           <h2 className="text-2xl font-light text-gray-800 mb-2 tracking-wider">NENHUM TALENTO ENCONTRADO</h2>
-//           <p className="text-gray-600">{error ? `Erro: ${error}` : "Não há talentos disponíveis no momento."}</p>
-//         </motion.div>
-//       </div>
-//     )
-//   }
-
-//   const currentTalent = selectedTalent || (talents.length > 0 ? talents[0] : null)
-
-//   if (!currentTalent) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-//         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-//           <Loader2 className="w-12 h-12 animate-spin text-amber-500 mx-auto mb-4" />
-//           <p className="text-gray-800 font-light tracking-wider">PREPARANDO GALERIA</p>
-//         </motion.div>
-//       </div>
-//     )
-//   }
-
-//   const currentTalentPhotos = talentPhotos[currentTalent.id] || []
-//   const currentHeroPhoto = currentTalentPhotos[heroPhotoIndex] || {}
-
-//   return (
-//     <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-gray-50 to-white text-gray-900">
-//       {/* Hero Section - Fashion Magazine Style */}
-//       <motion.div
-//         ref={heroRef}
-//         style={{ y: heroY, opacity: heroOpacity }}
-//         className="relative h-screen overflow-hidden"
-//       >
-//         <AnimatePresence mode="wait">
-//           <motion.div
-//             key={`${currentTalent.id}-${heroPhotoIndex}`}
-//             initial={{ opacity: 0, scale: 1.1 }}
-//             animate={{ opacity: 1, scale: 1 }}
-//             exit={{ opacity: 0, scale: 0.95 }}
-//             transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-//             className="absolute inset-0"
-//           >
-//             {/* Background Image - USANDO APENAS FOTOS DA API */}
-//             <div className="absolute inset-0">
-//               {currentHeroPhoto.url ? (
-//                 <img
-//                   src={currentHeroPhoto.url || "/placeholder.svg"}
-//                   alt={`${currentTalent.name} - Foto ${heroPhotoIndex + 1}`}
-//                   className="w-full h-full object-cover"
-//                   onError={(e) => {
-//                     console.error(`Erro ao carregar foto: ${currentHeroPhoto.url}`)
-//                     e.target.src = "/placeholder.svg?height=1080&width=1920"
-//                   }}
-//                 />
-//               ) : (
-//                 <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-//                   {loadingPhotos[currentTalent.id] ? (
-//                     <div className="text-center">
-//                       <Loader2 className="w-16 h-16 animate-spin text-amber-500 mx-auto mb-4" />
-//                       <p className="text-gray-700 font-light tracking-wider">CARREGANDO FOTOS...</p>
-//                     </div>
-//                   ) : (
-//                     <div className="text-center">
-//                       <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-//                       <p className="text-gray-500 font-light tracking-wider">NENHUMA FOTO DISPONÍVEL</p>
-//                     </div>
-//                   )}
-//                 </div>
-//               )}
-//               <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/50 to-transparent" />
-//               <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-white/30" />
-//             </div>
-
-//             {/* Content Overlay */}
-//             <div className="relative z-10 h-full flex items-center">
-//               <div className="max-w-7xl mx-auto px-8 w-full">
-//                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-//                   {/* Left Content */}
-//                   <motion.div
-//                     initial={{ opacity: 0, x: -50 }}
-//                     animate={{ opacity: 1, x: 0 }}
-//                     transition={{ delay: 0.3, duration: 0.8 }}
-//                     className="space-y-8"
-//                   >
-//                     {/* Featured Badge */}
-//                     {currentTalent.destaque && (
-//                       <motion.div
-//                         initial={{ scale: 0, rotate: -10 }}
-//                         animate={{ scale: 1, rotate: 0 }}
-//                         transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-//                         className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-black px-6 py-3 rounded-none font-bold text-sm tracking-wider"
-//                       >
-//                         <Crown className="w-5 h-5" />
-//                         TALENTO EXCLUSIVO
-//                       </motion.div>
-//                     )}
-
-//                     {/* Name */}
-//                     <div>
-//                       <motion.h1
-//                         initial={{ opacity: 0, y: 30 }}
-//                         animate={{ opacity: 1, y: 0 }}
-//                         transition={{ delay: 0.4, duration: 0.8 }}
-//                         className="text-6xl md:text-8xl font-thin tracking-tight leading-none mb-4 text-gray-900"
-//                       >
-//                         {currentTalent.name.split(" ")[0]}
-//                       </motion.h1>
-//                       {currentTalent.name.split(" ").length > 1 && (
-//                         <motion.h2
-//                           initial={{ opacity: 0, y: 30 }}
-//                           animate={{ opacity: 1, y: 0 }}
-//                           transition={{ delay: 0.6, duration: 0.8 }}
-//                           className="text-4xl md:text-6xl font-light tracking-wider text-gray-600"
-//                         >
-//                           {currentTalent.name.split(" ").slice(1).join(" ")}
-//                         </motion.h2>
-//                       )}
-//                     </div>
-
-//                     {/* Details */}
-//                     <motion.div
-//                       initial={{ opacity: 0, y: 20 }}
-//                       animate={{ opacity: 1, y: 0 }}
-//                       transition={{ delay: 0.8, duration: 0.6 }}
-//                       className="flex flex-wrap gap-6 text-sm tracking-wider"
-//                     >
-//                       {currentTalent.birth_date && (
-//                         <div className="flex items-center gap-2 text-gray-700">
-//                           <div className="w-px h-4 bg-amber-500"></div>
-//                           <span>
-//                             {new Date().getFullYear() - new Date(currentTalent.birth_date).getFullYear()} ANOS
-//                           </span>
-//                         </div>
-//                       )}
-//                       {currentTalent.height && (
-//                         <div className="flex items-center gap-2 text-gray-700">
-//                           <div className="w-px h-4 bg-amber-500"></div>
-//                           <span>{currentTalent.height}</span>
-//                         </div>
-//                       )}
-//                       {currentTalent.tipo_talento && (
-//                         <div className="flex items-center gap-2 text-gray-700">
-//                           <div className="w-px h-4 bg-amber-500"></div>
-//                           <span>{currentTalent.tipo_talento.toUpperCase()}</span>
-//                         </div>
-//                       )}
-//                     </motion.div>
-
-//                     {/* Instagram */}
-//                     {currentTalent.instagram && (
-//                       <motion.a
-//                         initial={{ opacity: 0, scale: 0.8 }}
-//                         animate={{ opacity: 1, scale: 1 }}
-//                         transition={{ delay: 1, duration: 0.6 }}
-//                         href={`https://instagram.com/${currentTalent.instagram.replace(/^@/, "")}`}
-//                         target="_blank"
-//                         rel="noopener noreferrer"
-//                         className="inline-flex items-center gap-3 border border-gray-400 hover:border-amber-500 px-6 py-3 transition-all duration-300 group text-gray-800"
-//                       >
-//                         <Instagram className="w-5 h-5 group-hover:text-amber-500 transition-colors" />
-//                         <span className="tracking-wider">@{currentTalent.instagram}</span>
-//                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-//                       </motion.a>
-//                     )}
-//                   </motion.div>
-
-//                   {/* Right Content - Stats */}
-//                   <motion.div
-//                     initial={{ opacity: 0, x: 50 }}
-//                     animate={{ opacity: 1, x: 0 }}
-//                     transition={{ delay: 0.5, duration: 0.8 }}
-//                     className="space-y-8 lg:text-right"
-//                   >
-//                     {/* Photo Counter */}
-//                     {currentTalentPhotos.length > 0 && (
-//                       <div className="text-right">
-//                         <div className="text-4xl font-thin text-amber-500 mb-2">
-//                           {String(heroPhotoIndex + 1).padStart(2, "0")}
-//                         </div>
-//                         <div className="text-sm tracking-wider text-gray-600">
-//                           DE {String(currentTalentPhotos.length).padStart(2, "0")} FOTOS
-//                         </div>
-//                       </div>
-//                     )}
-
-//                     {/* Loading indicator for photos */}
-//                     {loadingPhotos[currentTalent.id] && (
-//                       <div className="text-right">
-//                         <Loader2 className="w-6 h-6 animate-spin text-amber-500 ml-auto mb-2" />
-//                         <div className="text-sm tracking-wider text-gray-600">CARREGANDO FOTOS...</div>
-//                       </div>
-//                     )}
-
-//                     {/* Skills */}
-//                     <div className="space-y-4">
-//                       {currentTalent.can_sing && (
-//                         <div className="flex items-center justify-end gap-3">
-//                           <span className="text-sm tracking-wider text-gray-700">CANTO</span>
-//                           <Music className="w-4 h-4 text-amber-500" />
-//                         </div>
-//                       )}
-//                       {currentTalent.languages && currentTalent.languages.length > 0 && (
-//                         <div className="flex items-center justify-end gap-3">
-//                           <span className="text-sm tracking-wider text-gray-700">
-//                             {currentTalent.languages.length} IDIOMAS
-//                           </span>
-//                           <Languages className="w-4 h-4 text-amber-500" />
-//                         </div>
-//                       )}
-//                       {currentTalent.instruments && currentTalent.instruments.length > 0 && (
-//                         <div className="flex items-center justify-end gap-3">
-//                           <span className="text-sm tracking-wider text-gray-700">
-//                             {currentTalent.instruments.length} INSTRUMENTOS
-//                           </span>
-//                           <Music className="w-4 h-4 text-amber-500" />
-//                         </div>
-//                       )}
-//                     </div>
-//                   </motion.div>
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Navigation */}
-//             <div className="absolute inset-y-0 left-0 flex items-center z-20">
-//               <motion.button
-//                 whileHover={{ scale: 1.1, x: -5 }}
-//                 whileTap={{ scale: 0.9 }}
-//                 onClick={handlePrevious}
-//                 className="ml-8 w-12 h-12 border border-gray-400 hover:border-amber-500 hover:bg-amber-500/10 transition-all duration-300 flex items-center justify-center text-gray-800"
-//               >
-//                 <ChevronLeft className="w-6 h-6" />
-//               </motion.button>
-//             </div>
-
-//             <div className="absolute inset-y-0 right-0 flex items-center z-20">
-//               <motion.button
-//                 whileHover={{ scale: 1.1, x: 5 }}
-//                 whileTap={{ scale: 0.9 }}
-//                 onClick={handleNext}
-//                 className="mr-8 w-12 h-12 border border-gray-400 hover:border-amber-500 hover:bg-amber-500/10 transition-all duration-300 flex items-center justify-center text-gray-800"
-//               >
-//                 <ChevronRight className="w-6 h-6" />
-//               </motion.button>
-//             </div>
-
-//             {/* Photo Progress */}
-//             {currentTalentPhotos.length > 1 && (
-//               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-//                 <div className="flex gap-2">
-//                   {currentTalentPhotos.map((_, idx) => (
-//                     <motion.button
-//                       key={idx}
-//                       whileHover={{ scale: 1.2 }}
-//                       onClick={() => setHeroPhotoIndex(idx)}
-//                       className={`w-8 h-px transition-all duration-300 ${
-//                         heroPhotoIndex === idx ? "bg-amber-500" : "bg-gray-400 hover:bg-gray-600"
-//                       }`}
-//                     />
-//                   ))}
-//                 </div>
-//               </div>
-//             )}
-//           </motion.div>
-//         </AnimatePresence>
-//       </motion.div>
-
-//       {/* Featured Talents Section */}
-//       {featuredTalents.length > 0 && (
-//         <section className="py-24 bg-gradient-to-b from-white to-gray-50">
-//           <div className="max-w-7xl mx-auto px-8">
-//             <motion.div
-//               initial={{ opacity: 0, y: 30 }}
-//               whileInView={{ opacity: 1, y: 0 }}
-//               transition={{ duration: 0.8 }}
-//               viewport={{ once: true }}
-//               className="text-center mb-16"
-//             >
-//               <h2 className="text-4xl md:text-6xl font-thin tracking-wider mb-4 text-gray-900">
-//                 TALENTOS <span className="text-amber-500">EXCLUSIVOS</span>
-//               </h2>
-//               <div className="w-24 h-px bg-amber-500 mx-auto"></div>
-//             </motion.div>
-
-//             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-//               {featuredTalents.slice(0, 6).map((talent, index) => {
-//                 const mainPhotoUrl = getTalentMainPhoto(talent.id)
-//                 return (
-//                   <motion.div
-//                     key={talent.id}
-//                     initial={{ opacity: 0, y: 50 }}
-//                     whileInView={{ opacity: 1, y: 0 }}
-//                     transition={{ duration: 0.6, delay: index * 0.1 }}
-//                     viewport={{ once: true }}
-//                     whileHover={{ y: -10 }}
-//                     className="group cursor-pointer"
-//                     onClick={() => handleTalentClick(talent)}
-//                   >
-//                     <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-gray-100 rounded-lg">
-//                       {loadingPhotos[talent.id] ? (
-//                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-//                           <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-//                         </div>
-//                       ) : (
-//                         <img
-//                           src={mainPhotoUrl || "/placeholder.svg"}
-//                           alt={talent.name}
-//                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-//                           onError={(e) => {
-//                             e.target.src = "/placeholder.svg?height=600&width=450"
-//                           }}
-//                         />
-//                       )}
-//                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-//                       {/* Crown badge */}
-//                       <div className="absolute top-4 right-4">
-//                         <Crown className="w-6 h-6 text-amber-500" />
-//                       </div>
-
-//                       {/* Hover overlay */}
-//                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-//                         <div className="w-12 h-12 border border-white/70 flex items-center justify-center">
-//                           <Eye className="w-6 h-6 text-white" />
-//                         </div>
-//                       </div>
-//                     </div>
-
-//                     <div className="text-center">
-//                       <h3 className="text-2xl font-light tracking-wider mb-2 group-hover:text-amber-500 transition-colors text-gray-900">
-//                         {talent.name}
-//                       </h3>
-//                       <p className="text-gray-600 text-sm tracking-wider">
-//                         {talent.tipo_talento?.toUpperCase() || "TALENTO"}
-//                       </p>
-//                     </div>
-//                   </motion.div>
-//                 )
-//               })}
-//             </div>
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Gender Sections */}
-//       <section className="py-24 bg-gray-50">
-//         <div className="max-w-7xl mx-auto px-8">
-//           {/* Filters */}
-//           <motion.div
-//             initial={{ opacity: 0, y: 30 }}
-//             whileInView={{ opacity: 1, y: 0 }}
-//             transition={{ duration: 0.6 }}
-//             viewport={{ once: true }}
-//             className="flex flex-col md:flex-row gap-8 items-center justify-between mb-16"
-//           >
-//             <div className="flex items-center gap-8">
-//               <div className="relative">
-//                 <input
-//                   type="text"
-//                   placeholder="BUSCAR TALENTOS..."
-//                   value={searchTerm}
-//                   onChange={(e) => setSearchTerm(e.target.value)}
-//                   className="bg-transparent border-b border-gray-400 focus:border-amber-500 px-0 py-3 text-gray-900 placeholder-gray-500 focus:outline-none transition-colors tracking-wider"
-//                 />
-//               </div>
-
-//               <select
-//                 value={filterType}
-//                 onChange={(e) => setFilterType(e.target.value)}
-//                 className="bg-transparent border-b border-gray-400 focus:border-amber-500 px-0 py-3 text-gray-900 focus:outline-none transition-colors tracking-wider"
-//               >
-//                 <option value="all" className="bg-white">
-//                   TODOS
-//                 </option>
-//                 <option value="destacados" className="bg-white">
-//                   DESTAQUES
-//                 </option>
-//                 <option value="disponivel" className="bg-white">
-//                   DISPONÍVEIS
-//                 </option>
-//                 <option value="ativo" className="bg-white">
-//                   ATIVOS
-//                 </option>
-//               </select>
-//             </div>
-
-//             <div className="flex items-center gap-4">
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={() => setGenderFilter("all")}
-//                 className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-//                   genderFilter === "all"
-//                     ? "border-amber-500 text-amber-500"
-//                     : "border-gray-400 text-gray-700 hover:border-gray-600"
-//                 }`}
-//               >
-//                 TODOS
-//               </motion.button>
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={() => setGenderFilter("female")}
-//                 className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-//                   genderFilter === "female"
-//                     ? "border-amber-500 text-amber-500"
-//                     : "border-gray-400 text-gray-700 hover:border-gray-600"
-//                 }`}
-//               >
-//                 FEMININO
-//               </motion.button>
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={() => setGenderFilter("male")}
-//                 className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-//                   genderFilter === "male"
-//                     ? "border-amber-500 text-amber-500"
-//                     : "border-gray-400 text-gray-700 hover:border-gray-600"
-//                 }`}
-//               >
-//                 MASCULINO
-//               </motion.button>
-//             </div>
-//           </motion.div>
-
-//           {/* Female Talents */}
-//           {(genderFilter === "all" || genderFilter === "female") && femaleTalents.length > 0 && (
-//             <div className="mb-24">
-//               <motion.div
-//                 initial={{ opacity: 0, x: -30 }}
-//                 whileInView={{ opacity: 1, x: 0 }}
-//                 transition={{ duration: 0.8 }}
-//                 viewport={{ once: true }}
-//                 className="flex items-center gap-4 mb-12"
-//               >
-//                 <h3 className="text-3xl md:text-4xl font-thin tracking-wider text-gray-900">FEMININO</h3>
-//                 <div className="flex-1 h-px bg-gradient-to-r from-pink-400 to-transparent"></div>
-//                 <span className="text-pink-500 text-sm tracking-wider">{femaleTalents.length} TALENTOS</span>
-//               </motion.div>
-
-//               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-//                 {femaleTalents.map((talent, index) => {
-//                   const mainPhotoUrl = getTalentMainPhoto(talent.id)
-//                   return (
-//                     <motion.div
-//                       key={talent.id}
-//                       initial={{ opacity: 0, y: 30 }}
-//                       whileInView={{ opacity: 1, y: 0 }}
-//                       transition={{ duration: 0.5, delay: index * 0.05 }}
-//                       viewport={{ once: true }}
-//                       whileHover={{ y: -5, scale: 1.02 }}
-//                       className="group cursor-pointer"
-//                       onClick={() => handleTalentClick(talent)}
-//                     >
-//                       <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-gray-100 rounded-lg">
-//                         {loadingPhotos[talent.id] ? (
-//                           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-//                             <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
-//                           </div>
-//                         ) : (
-//                           <img
-//                             src={mainPhotoUrl || "/placeholder.svg"}
-//                             alt={talent.name}
-//                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-//                             onError={(e) => {
-//                               e.target.src = "/placeholder.svg?height=400&width=300"
-//                             }}
-//                           />
-//                         )}
-//                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-//                         {talent.destaque && (
-//                           <div className="absolute top-3 right-3">
-//                             <Crown className="w-4 h-4 text-amber-500" />
-//                           </div>
-//                         )}
-
-//                         {/* Favorite button */}
-//                         <motion.button
-//                           whileHover={{ scale: 1.1 }}
-//                           whileTap={{ scale: 0.9 }}
-//                           onClick={(e) => {
-//                             e.stopPropagation()
-//                             toggleFavorite(talent.id)
-//                           }}
-//                           className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 ${
-//                             favorites.has(talent.id)
-//                               ? "bg-red-500 text-white"
-//                               : "bg-white/80 text-gray-700 hover:bg-white"
-//                           }`}
-//                         >
-//                           <Heart className={`w-4 h-4 ${favorites.has(talent.id) ? "fill-current" : ""}`} />
-//                         </motion.button>
-//                       </div>
-
-//                       <div className="text-center">
-//                         <h4 className="font-light tracking-wider mb-1 group-hover:text-pink-500 transition-colors text-gray-900">
-//                           {talent.name}
-//                         </h4>
-//                         <p className="text-gray-600 text-xs tracking-wider">
-//                           {talent.birth_date
-//                             ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
-//                             : ""}
-//                         </p>
-//                       </div>
-//                     </motion.div>
-//                   )
-//                 })}
-//               </div>
-//             </div>
-//           )}
-
-//           {/* Male Talents */}
-//           {(genderFilter === "all" || genderFilter === "male") && maleTalents.length > 0 && (
-//             <div>
-//               <motion.div
-//                 initial={{ opacity: 0, x: -30 }}
-//                 whileInView={{ opacity: 1, x: 0 }}
-//                 transition={{ duration: 0.8 }}
-//                 viewport={{ once: true }}
-//                 className="flex items-center gap-4 mb-12"
-//               >
-//                 <h3 className="text-3xl md:text-4xl font-thin tracking-wider text-gray-900">MASCULINO</h3>
-//                 <div className="flex-1 h-px bg-gradient-to-r from-blue-400 to-transparent"></div>
-//                 <span className="text-blue-500 text-sm tracking-wider">{maleTalents.length} TALENTOS</span>
-//               </motion.div>
-
-//               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-//                 {maleTalents.map((talent, index) => {
-//                   const mainPhotoUrl = getTalentMainPhoto(talent.id)
-//                   return (
-//                     <motion.div
-//                       key={talent.id}
-//                       initial={{ opacity: 0, y: 30 }}
-//                       whileInView={{ opacity: 1, y: 0 }}
-//                       transition={{ duration: 0.5, delay: index * 0.05 }}
-//                       viewport={{ once: true }}
-//                       whileHover={{ y: -5, scale: 1.02 }}
-//                       className="group cursor-pointer"
-//                       onClick={() => handleTalentClick(talent)}
-//                     >
-//                       <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-gray-100 rounded-lg">
-//                         {loadingPhotos[talent.id] ? (
-//                           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-//                             <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-//                           </div>
-//                         ) : (
-//                           <img
-//                             src={mainPhotoUrl || "/placeholder.svg"}
-//                             alt={talent.name}
-//                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-//                             onError={(e) => {
-//                               e.target.src = "/placeholder.svg?height=400&width=300"
-//                             }}
-//                           />
-//                         )}
-//                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-//                         {talent.destaque && (
-//                           <div className="absolute top-3 right-3">
-//                             <Crown className="w-4 h-4 text-amber-500" />
-//                           </div>
-//                         )}
-
-//                         {/* Favorite button */}
-//                         <motion.button
-//                           whileHover={{ scale: 1.1 }}
-//                           whileTap={{ scale: 0.9 }}
-//                           onClick={(e) => {
-//                             e.stopPropagation()
-//                             toggleFavorite(talent.id)
-//                           }}
-//                           className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 ${
-//                             favorites.has(talent.id)
-//                               ? "bg-red-500 text-white"
-//                               : "bg-white/80 text-gray-700 hover:bg-white"
-//                           }`}
-//                         >
-//                           <Heart className={`w-4 h-4 ${favorites.has(talent.id) ? "fill-current" : ""}`} />
-//                         </motion.button>
-//                       </div>
-
-//                       <div className="text-center">
-//                         <h4 className="font-light tracking-wider mb-1 group-hover:text-blue-500 transition-colors text-gray-900">
-//                           {talent.name}
-//                         </h4>
-//                         <p className="text-gray-600 text-xs tracking-wider">
-//                           {talent.birth_date
-//                             ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
-//                             : ""}
-//                         </p>
-//                       </div>
-//                     </motion.div>
-//                   )
-//                 })}
-//               </div>
-//             </div>
-//           )}
-//         </div>
-//       </section>
-//     </div>
-//   )
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useState, useEffect, useRef } from "react"
-// import { useTalent } from "../contexts/talents-context"
-// import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-// import {
-//   ChevronLeft,
-//   ChevronRight,
-//   Instagram,
-//   Loader2,
-//   Heart,
-//   Eye,
-//   Music,
-//   Languages,
-//   ArrowRight,
-//   Crown,
-//   Camera,
-// } from "lucide-react"
-
-// export default function TalentsGallery() {
-//   const { talents, loading, fetchTalentById, fetchTalentPhotos, fetchTalents, error } = useTalent()
-
-//   // State management
-//   const [selectedTalent, setSelectedTalent] = useState(null)
-//   const [currentIndex, setCurrentIndex] = useState(0)
-//   const [talentPhotos, setTalentPhotos] = useState({})
-//   const [loadingPhotos, setLoadingPhotos] = useState({})
-//   const [currentPhotoIndex, setCurrentPhotoIndex] = useState({})
-//   const [currentPage, setCurrentPage] = useState(1)
-//   const [itemsPerPage] = useState(12)
-//   const [viewMode, setViewMode] = useState("grid")
-//   const [filterType, setFilterType] = useState("all")
-//   const [genderFilter, setGenderFilter] = useState("all") // 'all', 'male', 'female'
-//   const [searchTerm, setSearchTerm] = useState("")
-//   const [favorites, setFavorites] = useState(new Set())
-//   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
-//   const [heroPhotoIndex, setHeroPhotoIndex] = useState(0)
-
-//   // Refs
-//   const heroRef = useRef(null)
-//   const containerRef = useRef(null)
-//   const { scrollYProgress } = useScroll({ target: containerRef })
-//   const heroY = useTransform(scrollYProgress, [0, 1], [0, -100])
-//   const heroOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0])
-
-//   // Auto-advance hero photos
-//   useEffect(() => {
-//     if (!selectedTalent || !talentPhotos[selectedTalent.id]?.length) return
-
-//     const interval = setInterval(() => {
-//       setHeroPhotoIndex((prev) => {
-//         const maxIndex = talentPhotos[selectedTalent.id].length - 1
-//         return prev >= maxIndex ? 0 : prev + 1
-//       })
-//     }, 4000)
-
-//     return () => clearInterval(interval)
-//   }, [selectedTalent, talentPhotos])
-
-//   // Determine gender based on name patterns (basic implementation)
-//   const determineGender = (name) => {
-//     const femaleEndings = ["a", "ana", "ina", "ela", "lia", "ria", "ica", "isa", "ane", "ene", "ine"]
-//     const maleEndings = ["o", "os", "an", "on", "el", "ar", "er", "ir", "or", "ur"]
-
-//     const lowerName = name.toLowerCase()
-
-//     // Check female endings
-//     if (femaleEndings.some((ending) => lowerName.endsWith(ending))) {
-//       return "female"
-//     }
-
-//     // Check male endings
-//     if (maleEndings.some((ending) => lowerName.endsWith(ending))) {
-//       return "male"
-//     }
-
-//     // Default fallback
-//     return "unknown"
-//   }
-
-//   // Load talent photos - CORRIGIDO para ser mais robusto
-//   const loadTalentPhotos = async (talentId) => {
-//     if (talentPhotos[talentId] || loadingPhotos[talentId]) return
-
-//     setLoadingPhotos((prev) => ({ ...prev, [talentId]: true }))
-
-//     try {
-//       console.log(`Carregando fotos para talento ID: ${talentId}`)
-//       const photos = await fetchTalentPhotos(talentId)
-//       console.log(`Fotos recebidas para talento ${talentId}:`, photos)
-
-//       if (Array.isArray(photos) && photos.length > 0) {
-//         // CORRIGIDO: Processar todas as fotos sem filtrar por release
-//         const processedPhotos = photos
-//           .map((photo) => ({
-//             id: photo.id,
-//             talent_id: photo.talent_id,
-//             url: photo.image_url, // Usar image_url da API
-//             public_id: photo.public_id,
-//             short_url: photo.short_url,
-//             release: photo.release,
-//           }))
-//           .filter((photo) => photo.url && photo.url.trim() !== "") // Filtrar apenas URLs válidas
-
-//         console.log(`Fotos processadas para talento ${talentId}:`, processedPhotos)
-
-//         setTalentPhotos((prev) => ({
-//           ...prev,
-//           [talentId]: processedPhotos,
-//         }))
-//       } else {
-//         console.log(`Nenhuma foto encontrada para talento ${talentId}`)
-//         setTalentPhotos((prev) => ({
-//           ...prev,
-//           [talentId]: [],
-//         }))
-//       }
-//     } catch (error) {
-//       console.error(`Erro ao carregar fotos do talento ${talentId}:`, error)
-//       setTalentPhotos((prev) => ({
-//         ...prev,
-//         [talentId]: [],
-//       }))
-//     } finally {
-//       setLoadingPhotos((prev) => ({ ...prev, [talentId]: false }))
-//     }
-//   }
-
-//   // Load talent data
-//   const loadTalentData = async (talentId) => {
-//     try {
-//       const talent = await fetchTalentById(talentId)
-//       if (talent) {
-//         setSelectedTalent(talent)
-//         setHeroPhotoIndex(0)
-//         await loadTalentPhotos(talentId)
-//       }
-//     } catch (error) {
-//       console.error("Erro ao carregar dados do talento:", error)
-//     }
-//   }
-
-//   // Initialize data - CORRIGIDO com mais logs
-//   useEffect(() => {
-//     const initializeData = async () => {
-//       try {
-//         if (talents.length > 0) {
-//           console.log("Inicializando com talentos existentes:", talents.length)
-
-//           // Prioritize featured talents
-//           const featuredTalents = talents.filter((t) => t.destaque)
-//           const firstTalent = featuredTalents.length > 0 ? featuredTalents[0] : talents[0]
-
-//           console.log("Primeiro talento selecionado:", firstTalent)
-//           setSelectedTalent(firstTalent)
-//           setCurrentIndex(talents.findIndex((t) => t.id === firstTalent.id))
-
-//           // CORRIGIDO: Aguardar o carregamento das fotos antes de continuar
-//           console.log("Carregando fotos do primeiro talento...")
-//           await loadTalentPhotos(firstTalent.id)
-//           console.log("Fotos do primeiro talento carregadas")
-
-//           // Preload photos for featured talents first, then others
-//           const priorityTalents = [...featuredTalents, ...talents.filter((t) => !t.destaque)].slice(0, 10)
-
-//           // Carregar fotos em paralelo com delay escalonado
-//           priorityTalents.forEach((talent, index) => {
-//             setTimeout(() => {
-//               console.log(`Pré-carregando fotos do talento: ${talent.name} (ID: ${talent.id})`)
-//               loadTalentPhotos(talent.id)
-//             }, index * 300) // Aumentar delay para 300ms
-//           })
-
-//           setInitialLoadComplete(true)
-//           return
-//         }
-
-//         console.log("Buscando talentos da API...")
-//         const data = await fetchTalents()
-//         if (data && data.length > 0) {
-//           console.log("Talentos carregados da API:", data.length)
-
-//           const featuredTalents = data.filter((t) => t.destaque)
-//           const firstTalent = featuredTalents.length > 0 ? featuredTalents[0] : data[0]
-
-//           console.log("Primeiro talento da API:", firstTalent)
-//           setSelectedTalent(firstTalent)
-//           setCurrentIndex(data.findIndex((t) => t.id === firstTalent.id))
-
-//           console.log("Carregando fotos do primeiro talento da API...")
-//           await loadTalentPhotos(firstTalent.id)
-
-//           const priorityTalents = [...featuredTalents, ...data.filter((t) => !t.destaque)].slice(0, 10)
-//           priorityTalents.forEach((talent, index) => {
-//             setTimeout(() => {
-//               console.log(`Pré-carregando fotos: ${talent.name} (ID: ${talent.id})`)
-//               loadTalentPhotos(talent.id)
-//             }, index * 300)
-//           })
-//         }
-
-//         setInitialLoadComplete(true)
-//       } catch (err) {
-//         console.error("Erro ao inicializar dados:", err)
-//         setInitialLoadComplete(true)
-//       }
-//     }
-
-//     initializeData()
-//   }, [talents, fetchTalents])
-
-//   // Filter talents by gender and other criteria
-//   const filteredTalents = talents.filter((talent) => {
-//     const matchesSearch = talent.name.toLowerCase().includes(searchTerm.toLowerCase())
-//     const matchesFilter =
-//       filterType === "all" ||
-//       (filterType === "destacados" && talent.destaque) ||
-//       (filterType === "disponivel" && talent.disponivel) ||
-//       (filterType === "ativo" && talent.ativo)
-
-//     const gender = determineGender(talent.name)
-//     const matchesGender =
-//       genderFilter === "all" ||
-//       (genderFilter === "male" && gender === "male") ||
-//       (genderFilter === "female" && gender === "female")
-
-//     return matchesSearch && matchesFilter && matchesGender
-//   })
-
-//   // Separate by gender for display
-//   const maleTalents = filteredTalents.filter((talent) => determineGender(talent.name) === "male")
-//   const femaleTalents = filteredTalents.filter((talent) => determineGender(talent.name) === "female")
-//   const featuredTalents = filteredTalents.filter((talent) => talent.destaque)
-
-//   // Navigation handlers
-//   const handlePrevious = () => {
-//     if (talents.length === 0) return
-//     const newIndex = currentIndex > 0 ? currentIndex - 1 : talents.length - 1
-//     setCurrentIndex(newIndex)
-//     const talent = talents[newIndex]
-//     setSelectedTalent(talent)
-//     loadTalentPhotos(talent.id)
-//   }
-
-//   const handleNext = () => {
-//     if (talents.length === 0) return
-//     const newIndex = currentIndex < talents.length - 1 ? currentIndex + 1 : 0
-//     setCurrentIndex(newIndex)
-//     const talent = talents[newIndex]
-//     setSelectedTalent(talent)
-//     loadTalentPhotos(talent.id)
-//   }
-
-//   const handleTalentClick = (talent) => {
-//     const talentIndex = talents.findIndex((t) => t.id === talent.id)
-//     setCurrentIndex(talentIndex)
-//     setSelectedTalent(talent)
-//     loadTalentPhotos(talent.id)
-//     heroRef.current?.scrollIntoView({ behavior: "smooth" })
-//   }
-
-//   const toggleFavorite = (talentId) => {
-//     setFavorites((prev) => {
-//       const newFavorites = new Set(prev)
-//       if (newFavorites.has(talentId)) {
-//         newFavorites.delete(talentId)
-//       } else {
-//         newFavorites.add(talentId)
-//       }
-//       return newFavorites
-//     })
-//   }
-
-//   // Get main photo for talent - CORRIGIDO para sempre mostrar a primeira foto
-//   const getTalentMainPhoto = (talentId) => {
-//     const photos = talentPhotos[talentId]
-//     console.log(`getTalentMainPhoto para talento ${talentId}:`, photos)
-
-//     if (photos && photos.length > 0) {
-//       // Sempre usar a primeira foto disponível, independente do release
-//       const firstPhoto = photos[0]
-//       console.log(`Primeira foto para talento ${talentId}:`, firstPhoto)
-
-//       if (firstPhoto && firstPhoto.url) {
-//         console.log(`URL da foto para talento ${talentId}:`, firstPhoto.url)
-//         return firstPhoto.url
-//       }
-//     }
-
-//     console.log(`Nenhuma foto encontrada para talento ${talentId}, usando placeholder`)
-//     return "/placeholder.svg?height=600&width=450&text=Sem+Foto"
-//   }
-
-//   // Loading state - FUNDO CLARO
-//   if (loading && !initialLoadComplete && talents.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-//         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-//           <div className="relative mb-8">
-//             <div className="w-20 h-20 border-2 border-amber-500 rounded-full animate-spin border-t-transparent mx-auto"></div>
-//             <Crown className="w-8 h-8 text-amber-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-//           </div>
-//           <p className="text-gray-800 font-light tracking-wider">CARREGANDO TALENTOS EXCLUSIVOS</p>
-//         </motion.div>
-//       </div>
-//     )
-//   }
-
-//   if (initialLoadComplete && talents.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-//         <motion.div
-//           initial={{ opacity: 0, y: 20 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           className="text-center max-w-md mx-auto p-8"
-//         >
-//           <Crown className="w-16 h-16 text-amber-500 mx-auto mb-6" />
-//           <h2 className="text-2xl font-light text-gray-800 mb-2 tracking-wider">NENHUM TALENTO ENCONTRADO</h2>
-//           <p className="text-gray-600">{error ? `Erro: ${error}` : "Não há talentos disponíveis no momento."}</p>
-//         </motion.div>
-//       </div>
-//     )
-//   }
-
-//   const currentTalent = selectedTalent || (talents.length > 0 ? talents[0] : null)
-
-//   if (!currentTalent) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-//         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-//           <Loader2 className="w-12 h-12 animate-spin text-amber-500 mx-auto mb-4" />
-//           <p className="text-gray-800 font-light tracking-wider">PREPARANDO GALERIA</p>
-//         </motion.div>
-//       </div>
-//     )
-//   }
-
-//   const currentTalentPhotos = talentPhotos[currentTalent.id] || []
-//   const currentHeroPhoto = currentTalentPhotos[heroPhotoIndex] || {}
-
-//   return (
-//     <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-gray-50 to-white text-gray-900">
-//       {/* Hero Section - Fashion Magazine Style */}
-//       <motion.div
-//         ref={heroRef}
-//         style={{ y: heroY, opacity: heroOpacity }}
-//         className="relative h-screen overflow-hidden"
-//       >
-//         <AnimatePresence mode="wait">
-//           <motion.div
-//             key={`${currentTalent.id}-${heroPhotoIndex}`}
-//             initial={{ opacity: 0, scale: 1.1 }}
-//             animate={{ opacity: 1, scale: 1 }}
-//             exit={{ opacity: 0, scale: 0.95 }}
-//             transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-//             className="absolute inset-0"
-//           >
-//             {/* Background Image - USANDO APENAS FOTOS DA API */}
-//             <div className="absolute inset-0">
-//               {currentHeroPhoto.url || (currentTalentPhotos.length > 0 && currentTalentPhotos[0].url) ? (
-//                 <img
-//                   src={currentHeroPhoto.url || currentTalentPhotos[0]?.url || "/placeholder.svg"}
-//                   alt={`${currentTalent.name} - Foto ${heroPhotoIndex + 1}`}
-//                   className="w-full h-full object-cover"
-//                   onError={(e) => {
-//                     console.error(`Erro ao carregar foto: ${currentHeroPhoto.url || currentTalentPhotos[0]?.url}`)
-//                     e.target.src = "/placeholder.svg?height=1080&width=1920&text=Erro+ao+Carregar"
-//                   }}
-//                 />
-//               ) : (
-//                 <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-//                   {loadingPhotos[currentTalent.id] ? (
-//                     <div className="text-center">
-//                       <Loader2 className="w-16 h-16 animate-spin text-amber-500 mx-auto mb-4" />
-//                       <p className="text-gray-700 font-light tracking-wider">CARREGANDO FOTOS...</p>
-//                     </div>
-//                   ) : (
-//                     <div className="text-center">
-//                       <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-//                       <p className="text-gray-500 font-light tracking-wider">NENHUMA FOTO DISPONÍVEL</p>
-//                     </div>
-//                   )}
-//                 </div>
-//               )}
-//               <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/50 to-transparent" />
-//               <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-white/30" />
-//             </div>
-
-//             {/* Content Overlay */}
-//             <div className="relative z-10 h-full flex items-center">
-//               <div className="max-w-7xl mx-auto px-8 w-full">
-//                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-//                   {/* Left Content */}
-//                   <motion.div
-//                     initial={{ opacity: 0, x: -50 }}
-//                     animate={{ opacity: 1, x: 0 }}
-//                     transition={{ delay: 0.3, duration: 0.8 }}
-//                     className="space-y-8"
-//                   >
-//                     {/* Featured Badge */}
-//                     {currentTalent.destaque && (
-//                       <motion.div
-//                         initial={{ scale: 0, rotate: -10 }}
-//                         animate={{ scale: 1, rotate: 0 }}
-//                         transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-//                         className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-black px-6 py-3 rounded-none font-bold text-sm tracking-wider"
-//                       >
-//                         <Crown className="w-5 h-5" />
-//                         TALENTO EXCLUSIVO
-//                       </motion.div>
-//                     )}
-
-//                     {/* Name */}
-//                     <div>
-//                       <motion.h1
-//                         initial={{ opacity: 0, y: 30 }}
-//                         animate={{ opacity: 1, y: 0 }}
-//                         transition={{ delay: 0.4, duration: 0.8 }}
-//                         className="text-6xl md:text-8xl font-thin tracking-tight leading-none mb-4 text-gray-900"
-//                       >
-//                         {currentTalent.name.split(" ")[0]}
-//                       </motion.h1>
-//                       {currentTalent.name.split(" ").length > 1 && (
-//                         <motion.h2
-//                           initial={{ opacity: 0, y: 30 }}
-//                           animate={{ opacity: 1, y: 0 }}
-//                           transition={{ delay: 0.6, duration: 0.8 }}
-//                           className="text-4xl md:text-6xl font-light tracking-wider text-gray-600"
-//                         >
-//                           {currentTalent.name.split(" ").slice(1).join(" ")}
-//                         </motion.h2>
-//                       )}
-//                     </div>
-
-//                     {/* Details */}
-//                     <motion.div
-//                       initial={{ opacity: 0, y: 20 }}
-//                       animate={{ opacity: 1, y: 0 }}
-//                       transition={{ delay: 0.8, duration: 0.6 }}
-//                       className="flex flex-wrap gap-6 text-sm tracking-wider"
-//                     >
-//                       {currentTalent.birth_date && (
-//                         <div className="flex items-center gap-2 text-gray-700">
-//                           <div className="w-px h-4 bg-amber-500"></div>
-//                           <span>
-//                             {new Date().getFullYear() - new Date(currentTalent.birth_date).getFullYear()} ANOS
-//                           </span>
-//                         </div>
-//                       )}
-//                       {currentTalent.height && (
-//                         <div className="flex items-center gap-2 text-gray-700">
-//                           <div className="w-px h-4 bg-amber-500"></div>
-//                           <span>{currentTalent.height}</span>
-//                         </div>
-//                       )}
-//                       {currentTalent.tipo_talento && (
-//                         <div className="flex items-center gap-2 text-gray-700">
-//                           <div className="w-px h-4 bg-amber-500"></div>
-//                           <span>{currentTalent.tipo_talento.toUpperCase()}</span>
-//                         </div>
-//                       )}
-//                     </motion.div>
-
-//                     {/* Instagram */}
-//                     {currentTalent.instagram && (
-//                       <motion.a
-//                         initial={{ opacity: 0, scale: 0.8 }}
-//                         animate={{ opacity: 1, scale: 1 }}
-//                         transition={{ delay: 1, duration: 0.6 }}
-//                         href={`https://instagram.com/${currentTalent.instagram.replace(/^@/, "")}`}
-//                         target="_blank"
-//                         rel="noopener noreferrer"
-//                         className="inline-flex items-center gap-3 border border-gray-400 hover:border-amber-500 px-6 py-3 transition-all duration-300 group text-gray-800"
-//                       >
-//                         <Instagram className="w-5 h-5 group-hover:text-amber-500 transition-colors" />
-//                         <span className="tracking-wider">@{currentTalent.instagram}</span>
-//                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-//                       </motion.a>
-//                     )}
-//                   </motion.div>
-
-//                   {/* Right Content - Stats */}
-//                   <motion.div
-//                     initial={{ opacity: 0, x: 50 }}
-//                     animate={{ opacity: 1, x: 0 }}
-//                     transition={{ delay: 0.5, duration: 0.8 }}
-//                     className="space-y-8 lg:text-right"
-//                   >
-//                     {/* Photo Counter */}
-//                     {currentTalentPhotos.length > 0 && (
-//                       <div className="text-right">
-//                         <div className="text-4xl font-thin text-amber-500 mb-2">
-//                           {String(heroPhotoIndex + 1).padStart(2, "0")}
-//                         </div>
-//                         <div className="text-sm tracking-wider text-gray-600">
-//                           DE {String(currentTalentPhotos.length).padStart(2, "0")} FOTOS
-//                         </div>
-//                       </div>
-//                     )}
-
-//                     {/* Loading indicator for photos */}
-//                     {loadingPhotos[currentTalent.id] && (
-//                       <div className="text-right">
-//                         <Loader2 className="w-6 h-6 animate-spin text-amber-500 ml-auto mb-2" />
-//                         <div className="text-sm tracking-wider text-gray-600">CARREGANDO FOTOS...</div>
-//                       </div>
-//                     )}
-
-//                     {/* Skills */}
-//                     <div className="space-y-4">
-//                       {currentTalent.can_sing && (
-//                         <div className="flex items-center justify-end gap-3">
-//                           <span className="text-sm tracking-wider text-gray-700">CANTO</span>
-//                           <Music className="w-4 h-4 text-amber-500" />
-//                         </div>
-//                       )}
-//                       {currentTalent.languages && currentTalent.languages.length > 0 && (
-//                         <div className="flex items-center justify-end gap-3">
-//                           <span className="text-sm tracking-wider text-gray-700">
-//                             {currentTalent.languages.length} IDIOMAS
-//                           </span>
-//                           <Languages className="w-4 h-4 text-amber-500" />
-//                         </div>
-//                       )}
-//                       {currentTalent.instruments && currentTalent.instruments.length > 0 && (
-//                         <div className="flex items-center justify-end gap-3">
-//                           <span className="text-sm tracking-wider text-gray-700">
-//                             {currentTalent.instruments.length} INSTRUMENTOS
-//                           </span>
-//                           <Music className="w-4 h-4 text-amber-500" />
-//                         </div>
-//                       )}
-//                     </div>
-//                   </motion.div>
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Navigation */}
-//             <div className="absolute inset-y-0 left-0 flex items-center z-20">
-//               <motion.button
-//                 whileHover={{ scale: 1.1, x: -5 }}
-//                 whileTap={{ scale: 0.9 }}
-//                 onClick={handlePrevious}
-//                 className="ml-8 w-12 h-12 border border-gray-400 hover:border-amber-500 hover:bg-amber-500/10 transition-all duration-300 flex items-center justify-center text-gray-800"
-//               >
-//                 <ChevronLeft className="w-6 h-6" />
-//               </motion.button>
-//             </div>
-
-//             <div className="absolute inset-y-0 right-0 flex items-center z-20">
-//               <motion.button
-//                 whileHover={{ scale: 1.1, x: 5 }}
-//                 whileTap={{ scale: 0.9 }}
-//                 onClick={handleNext}
-//                 className="mr-8 w-12 h-12 border border-gray-400 hover:border-amber-500 hover:bg-amber-500/10 transition-all duration-300 flex items-center justify-center text-gray-800"
-//               >
-//                 <ChevronRight className="w-6 h-6" />
-//               </motion.button>
-//             </div>
-
-//             {/* Photo Progress */}
-//             {currentTalentPhotos.length > 1 && (
-//               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-//                 <div className="flex gap-2">
-//                   {currentTalentPhotos.map((_, idx) => (
-//                     <motion.button
-//                       key={idx}
-//                       whileHover={{ scale: 1.2 }}
-//                       onClick={() => setHeroPhotoIndex(idx)}
-//                       className={`w-8 h-px transition-all duration-300 ${
-//                         heroPhotoIndex === idx ? "bg-amber-500" : "bg-gray-400 hover:bg-gray-600"
-//                       }`}
-//                     />
-//                   ))}
-//                 </div>
-//               </div>
-//             )}
-//           </motion.div>
-//         </AnimatePresence>
-//       </motion.div>
-
-//       {/* Featured Talents Section */}
-//       {featuredTalents.length > 0 && (
-//         <section className="py-24 bg-gradient-to-b from-white to-gray-50">
-//           <div className="max-w-7xl mx-auto px-8">
-//             <motion.div
-//               initial={{ opacity: 0, y: 30 }}
-//               whileInView={{ opacity: 1, y: 0 }}
-//               transition={{ duration: 0.8 }}
-//               viewport={{ once: true }}
-//               className="text-center mb-16"
-//             >
-//               <h2 className="text-4xl md:text-6xl font-thin tracking-wider mb-4 text-gray-900">
-//                 TALENTOS <span className="text-amber-500">EXCLUSIVOS</span>
-//               </h2>
-//               <div className="w-24 h-px bg-amber-500 mx-auto"></div>
-//             </motion.div>
-
-//             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-//               {featuredTalents.slice(0, 6).map((talent, index) => {
-//                 const mainPhotoUrl = getTalentMainPhoto(talent.id)
-//                 return (
-//                   <motion.div
-//                     key={talent.id}
-//                     initial={{ opacity: 0, y: 50 }}
-//                     whileInView={{ opacity: 1, y: 0 }}
-//                     transition={{ duration: 0.6, delay: index * 0.1 }}
-//                     viewport={{ once: true }}
-//                     whileHover={{ y: -10 }}
-//                     className="group cursor-pointer"
-//                     onClick={() => handleTalentClick(talent)}
-//                   >
-//                     <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-gray-100 rounded-lg">
-//                       {loadingPhotos[talent.id] ? (
-//                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-//                           <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-//                         </div>
-//                       ) : (
-//                         <img
-//                           src={mainPhotoUrl || "/placeholder.svg"}
-//                           alt={talent.name}
-//                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-//                           onError={(e) => {
-//                             e.target.src = "/placeholder.svg?height=600&width=450"
-//                           }}
-//                         />
-//                       )}
-//                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-//                       {/* Crown badge */}
-//                       <div className="absolute top-4 right-4">
-//                         <Crown className="w-6 h-6 text-amber-500" />
-//                       </div>
-
-//                       {/* Hover overlay */}
-//                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-//                         <div className="w-12 h-12 border border-white/70 flex items-center justify-center">
-//                           <Eye className="w-6 h-6 text-white" />
-//                         </div>
-//                       </div>
-//                     </div>
-
-//                     <div className="text-center">
-//                       <h3 className="text-2xl font-light tracking-wider mb-2 group-hover:text-amber-500 transition-colors text-gray-900">
-//                         {talent.name}
-//                       </h3>
-//                       <p className="text-gray-600 text-sm tracking-wider">
-//                         {talent.tipo_talento?.toUpperCase() || "TALENTO"}
-//                       </p>
-//                     </div>
-//                   </motion.div>
-//                 )
-//               })}
-//             </div>
-//           </div>
-//         </section>
-//       )}
-
-//       {/* Gender Sections */}
-//       <section className="py-24 bg-gray-50">
-//         <div className="max-w-7xl mx-auto px-8">
-//           {/* Filters */}
-//           <motion.div
-//             initial={{ opacity: 0, y: 30 }}
-//             whileInView={{ opacity: 1, y: 0 }}
-//             transition={{ duration: 0.6 }}
-//             viewport={{ once: true }}
-//             className="flex flex-col md:flex-row gap-8 items-center justify-between mb-16"
-//           >
-//             <div className="flex items-center gap-8">
-//               <div className="relative">
-//                 <input
-//                   type="text"
-//                   placeholder="BUSCAR TALENTOS..."
-//                   value={searchTerm}
-//                   onChange={(e) => setSearchTerm(e.target.value)}
-//                   className="bg-transparent border-b border-gray-400 focus:border-amber-500 px-0 py-3 text-gray-900 placeholder-gray-500 focus:outline-none transition-colors tracking-wider"
-//                 />
-//               </div>
-
-//               <select
-//                 value={filterType}
-//                 onChange={(e) => setFilterType(e.target.value)}
-//                 className="bg-transparent border-b border-gray-400 focus:border-amber-500 px-0 py-3 text-gray-900 focus:outline-none transition-colors tracking-wider"
-//               >
-//                 <option value="all" className="bg-white">
-//                   TODOS
-//                 </option>
-//                 <option value="destacados" className="bg-white">
-//                   DESTAQUES
-//                 </option>
-//                 <option value="disponivel" className="bg-white">
-//                   DISPONÍVEIS
-//                 </option>
-//                 <option value="ativo" className="bg-white">
-//                   ATIVOS
-//                 </option>
-//               </select>
-//             </div>
-
-//             <div className="flex items-center gap-4">
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={() => setGenderFilter("all")}
-//                 className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-//                   genderFilter === "all"
-//                     ? "border-amber-500 text-amber-500"
-//                     : "border-gray-400 text-gray-700 hover:border-gray-600"
-//                 }`}
-//               >
-//                 TODOS
-//               </motion.button>
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={() => setGenderFilter("female")}
-//                 className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-//                   genderFilter === "female"
-//                     ? "border-amber-500 text-amber-500"
-//                     : "border-gray-400 text-gray-700 hover:border-gray-600"
-//                 }`}
-//               >
-//                 FEMININO
-//               </motion.button>
-//               <motion.button
-//                 whileHover={{ scale: 1.05 }}
-//                 whileTap={{ scale: 0.95 }}
-//                 onClick={() => setGenderFilter("male")}
-//                 className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-//                   genderFilter === "male"
-//                     ? "border-amber-500 text-amber-500"
-//                     : "border-gray-400 text-gray-700 hover:border-gray-600"
-//                 }`}
-//               >
-//                 MASCULINO
-//               </motion.button>
-//             </div>
-//           </motion.div>
-
-//           {/* Female Talents */}
-//           {(genderFilter === "all" || genderFilter === "female") && femaleTalents.length > 0 && (
-//             <div className="mb-24">
-//               <motion.div
-//                 initial={{ opacity: 0, x: -30 }}
-//                 whileInView={{ opacity: 1, x: 0 }}
-//                 transition={{ duration: 0.8 }}
-//                 viewport={{ once: true }}
-//                 className="flex items-center gap-4 mb-12"
-//               >
-//                 <h3 className="text-3xl md:text-4xl font-thin tracking-wider text-gray-900">FEMININO</h3>
-//                 <div className="flex-1 h-px bg-gradient-to-r from-pink-400 to-transparent"></div>
-//                 <span className="text-pink-500 text-sm tracking-wider">{femaleTalents.length} TALENTOS</span>
-//               </motion.div>
-
-//               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-//                 {femaleTalents.map((talent, index) => {
-//                   const mainPhotoUrl = getTalentMainPhoto(talent.id)
-//                   return (
-//                     <motion.div
-//                       key={talent.id}
-//                       initial={{ opacity: 0, y: 30 }}
-//                       whileInView={{ opacity: 1, y: 0 }}
-//                       transition={{ duration: 0.5, delay: index * 0.05 }}
-//                       viewport={{ once: true }}
-//                       whileHover={{ y: -5, scale: 1.02 }}
-//                       className="group cursor-pointer"
-//                       onClick={() => handleTalentClick(talent)}
-//                     >
-//                       <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-gray-100 rounded-lg">
-//                         {(() => {
-//                           const photoUrl = getTalentMainPhoto(talent.id)
-//                           console.log(`Renderizando card para ${talent.name} (ID: ${talent.id}) com foto:`, photoUrl)
-//                           return null
-//                         })()}
-//                         {loadingPhotos[talent.id] ? (
-//                           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-//                             <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
-//                           </div>
-//                         ) : (
-//                           <img
-//                             src={mainPhotoUrl || "/placeholder.svg"}
-//                             alt={talent.name}
-//                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-//                             onError={(e) => {
-//                               e.target.src = "/placeholder.svg?height=400&width=300"
-//                             }}
-//                           />
-//                         )}
-//                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-//                         {talent.destaque && (
-//                           <div className="absolute top-3 right-3">
-//                             <Crown className="w-4 h-4 text-amber-500" />
-//                           </div>
-//                         )}
-
-//                         {/* Favorite button */}
-//                         <motion.button
-//                           whileHover={{ scale: 1.1 }}
-//                           whileTap={{ scale: 0.9 }}
-//                           onClick={(e) => {
-//                             e.stopPropagation()
-//                             toggleFavorite(talent.id)
-//                           }}
-//                           className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 ${
-//                             favorites.has(talent.id)
-//                               ? "bg-red-500 text-white"
-//                               : "bg-white/80 text-gray-700 hover:bg-white"
-//                           }`}
-//                         >
-//                           <Heart className={`w-4 h-4 ${favorites.has(talent.id) ? "fill-current" : ""}`} />
-//                         </motion.button>
-//                       </div>
-
-//                       <div className="text-center">
-//                         <h4 className="font-light tracking-wider mb-1 group-hover:text-pink-500 transition-colors text-gray-900">
-//                           {talent.name}
-//                         </h4>
-//                         <p className="text-gray-600 text-xs tracking-wider">
-//                           {talent.birth_date
-//                             ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
-//                             : ""}
-//                         </p>
-//                       </div>
-//                     </motion.div>
-//                   )
-//                 })}
-//               </div>
-//             </div>
-//           )}
-
-//           {/* Male Talents */}
-//           {(genderFilter === "all" || genderFilter === "male") && maleTalents.length > 0 && (
-//             <div>
-//               <motion.div
-//                 initial={{ opacity: 0, x: -30 }}
-//                 whileInView={{ opacity: 1, x: 0 }}
-//                 transition={{ duration: 0.8 }}
-//                 viewport={{ once: true }}
-//                 className="flex items-center gap-4 mb-12"
-//               >
-//                 <h3 className="text-3xl md:text-4xl font-thin tracking-wider text-gray-900">MASCULINO</h3>
-//                 <div className="flex-1 h-px bg-gradient-to-r from-blue-400 to-transparent"></div>
-//                 <span className="text-blue-500 text-sm tracking-wider">{maleTalents.length} TALENTOS</span>
-//               </motion.div>
-
-//               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-//                 {maleTalents.map((talent, index) => {
-//                   const mainPhotoUrl = getTalentMainPhoto(talent.id)
-//                   return (
-//                     <motion.div
-//                       key={talent.id}
-//                       initial={{ opacity: 0, y: 30 }}
-//                       whileInView={{ opacity: 1, y: 0 }}
-//                       transition={{ duration: 0.5, delay: index * 0.05 }}
-//                       viewport={{ once: true }}
-//                       whileHover={{ y: -5, scale: 1.02 }}
-//                       className="group cursor-pointer"
-//                       onClick={() => handleTalentClick(talent)}
-//                     >
-//                       <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-gray-100 rounded-lg">
-//                         {(() => {
-//                           const photoUrl = getTalentMainPhoto(talent.id)
-//                           console.log(`Renderizando card para ${talent.name} (ID: ${talent.id}) com foto:`, photoUrl)
-//                           return null
-//                         })()}
-//                         {loadingPhotos[talent.id] ? (
-//                           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-//                             <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-//                           </div>
-//                         ) : (
-//                           <img
-//                             src={mainPhotoUrl || "/placeholder.svg"}
-//                             alt={talent.name}
-//                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-//                             onError={(e) => {
-//                               e.target.src = "/placeholder.svg?height=400&width=300"
-//                             }}
-//                           />
-//                         )}
-//                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-//                         {talent.destaque && (
-//                           <div className="absolute top-3 right-3">
-//                             <Crown className="w-4 h-4 text-amber-500" />
-//                           </div>
-//                         )}
-
-//                         {/* Favorite button */}
-//                         <motion.button
-//                           whileHover={{ scale: 1.1 }}
-//                           whileTap={{ scale: 0.9 }}
-//                           onClick={(e) => {
-//                             e.stopPropagation()
-//                             toggleFavorite(talent.id)
-//                           }}
-//                           className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 ${
-//                             favorites.has(talent.id)
-//                               ? "bg-red-500 text-white"
-//                               : "bg-white/80 text-gray-700 hover:bg-white"
-//                           }`}
-//                         >
-//                           <Heart className={`w-4 h-4 ${favorites.has(talent.id) ? "fill-current" : ""}`} />
-//                         </motion.button>
-//                       </div>
-
-//                       <div className="text-center">
-//                         <h4 className="font-light tracking-wider mb-1 group-hover:text-blue-500 transition-colors text-gray-900">
-//                           {talent.name}
-//                         </h4>
-//                         <p className="text-gray-600 text-xs tracking-wider">
-//                           {talent.birth_date
-//                             ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
-//                             : ""}
-//                         </p>
-//                       </div>
-//                     </motion.div>
-//                   )
-//                 })}
-//               </div>
-//             </div>
-//           )}
-//         </div>
-//       </section>
-//     </div>
-//   )
-// }
-
-
-
-
-
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { useTalent } from "../contexts/talents-context"
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import {
-  ChevronLeft,
-  ChevronRight,
-  Instagram,
-  Loader2,
-  Heart,
-  Eye,
-  Music,
-  Languages,
-  ArrowRight,
-  Crown,
-  Camera,
-} from "lucide-react"
+import { motion, useScroll, useTransform } from "framer-motion"
+import { ChevronLeft, ChevronRight, Instagram, Loader2, Eye, ArrowRight, Crown, ChevronDown } from "lucide-react"
+import TalentDetails from "./TalentDetails"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import Header from "./HeaderSite"
+import Footer from "./Footer"
+export default function TalentsGallery({ onPageNavigate }) {
+  const [showDetails, setShowDetails] = useState(false)
+  const [selectedTalentForDetails, setSelectedTalentForDetails] = useState(null)
 
-export default function TalentsGallery() {
   const { talents, loading, fetchTalentById, fetchTalentPhotos, fetchTalents, error } = useTalent()
 
   // State management
@@ -2764,16 +17,21 @@ export default function TalentsGallery() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [talentPhotos, setTalentPhotos] = useState({})
   const [loadingPhotos, setLoadingPhotos] = useState({})
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState({})
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(12)
-  const [viewMode, setViewMode] = useState("grid")
-  const [filterType, setFilterType] = useState("all")
-  const [genderFilter, setGenderFilter] = useState("all") // 'all', 'ator', 'atriz'
-  const [searchTerm, setSearchTerm] = useState("")
-  const [favorites, setFavorites] = useState(new Set())
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false)
+  const [loadedImages, setLoadedImages] = useState({})
+  const [imageErrors, setImageErrors] = useState({})
   const [heroPhotoIndex, setHeroPhotoIndex] = useState(0)
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false)
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+
+  // Pagination states
+  const [atrizesPage, setAtrizesPage] = useState(1)
+  const [atoresPage, setAtoresPage] = useState(1)
+  const itemsPerPage = 10
+
+  // Filter states
+  const [filterType, setFilterType] = useState("all")
+  const [genderFilter, setGenderFilter] = useState("all")
+  const [searchTerm, setSearchTerm] = useState("")
 
   // Refs
   const heroRef = useRef(null)
@@ -2783,18 +41,27 @@ export default function TalentsGallery() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0])
 
   // Auto-advance hero photos
+  const currentTalent = selectedTalent || (talents.length > 0 ? talents[0] : null)
+  const currentTalentPhotos = currentTalent ? talentPhotos[currentTalent.id] || [] : []
+
   useEffect(() => {
-    if (!selectedTalent || !talentPhotos[selectedTalent.id]?.length) return
+    if (!currentTalent || !currentTalentPhotos?.length || currentTalentPhotos.length <= 1) return
 
     const interval = setInterval(() => {
       setHeroPhotoIndex((prev) => {
-        const maxIndex = talentPhotos[selectedTalent.id].length - 1
+        const maxIndex = currentTalentPhotos.length - 1
         return prev >= maxIndex ? 0 : prev + 1
       })
-    }, 4000)
+    }, 5000) // Reduzindo de 7000ms para 5000ms para melhor experiência
 
     return () => clearInterval(interval)
-  }, [selectedTalent, talentPhotos])
+  }, [currentTalent, currentTalentPhotos]) // Usando currentTalentPhotos em vez de talentPhotos[selectedTalent.id]
+
+  const getFeaturedTalentsFirst = (talentsList) => {
+    const featured = talentsList.filter((talent) => talent.destaque === true)
+    const regular = talentsList.filter((talent) => talent.destaque !== true)
+    return [...featured, ...regular]
+  }
 
   // Função para determinar o tipo do talento
   const getTalentType = (talent) => {
@@ -2809,47 +76,50 @@ export default function TalentsGallery() {
     return tipo
   }
 
-  // Load talent photos - CORRIGIDO para ser mais robusto
+  // Load talent photos - CORRIGIDO para carregar todas as fotos
   const loadTalentPhotos = async (talentId) => {
-    if (talentPhotos[talentId] || loadingPhotos[talentId]) return
+    if (talentPhotos[talentId] && talentPhotos[talentId].length > 0) return
+    if (loadingPhotos[talentId]) return
 
     setLoadingPhotos((prev) => ({ ...prev, [talentId]: true }))
-
     try {
       console.log(`Carregando fotos para talento ID: ${talentId}`)
       const photos = await fetchTalentPhotos(talentId)
       console.log(`Fotos recebidas para talento ${talentId}:`, photos)
-
       if (Array.isArray(photos) && photos.length > 0) {
-        // CORRIGIDO: Processar todas as fotos sem filtrar por release
         const processedPhotos = photos
           .map((photo) => ({
             id: photo.id,
             talent_id: photo.talent_id,
-            url: photo.image_url, // Usar image_url da API
+            url: photo.image_url,
             public_id: photo.public_id,
             short_url: photo.short_url,
             release: photo.release,
           }))
-          .filter((photo) => photo.url && photo.url.trim() !== "") // Filtrar apenas URLs válidas
-
+          .filter((photo) => photo.url && photo.url.trim() !== "")
         console.log(`Fotos processadas para talento ${talentId}:`, processedPhotos)
-        setTalentPhotos((prev) => ({
-          ...prev,
-          [talentId]: processedPhotos,
-        }))
+
+        setTalentPhotos((prev) => {
+          if (prev[talentId] && prev[talentId].length > 0) {
+            return prev // Don't replace existing photos
+          }
+          return {
+            ...prev,
+            [talentId]: processedPhotos,
+          }
+        })
       } else {
         console.log(`Nenhuma foto encontrada para talento ${talentId}`)
         setTalentPhotos((prev) => ({
           ...prev,
-          [talentId]: [],
+          [talentId]: prev[talentId] || [],
         }))
       }
     } catch (error) {
       console.error(`Erro ao carregar fotos do talento ${talentId}:`, error)
       setTalentPhotos((prev) => ({
         ...prev,
-        [talentId]: [],
+        [talentId]: prev[talentId] || [],
       }))
     } finally {
       setLoadingPhotos((prev) => ({ ...prev, [talentId]: false }))
@@ -2870,62 +140,52 @@ export default function TalentsGallery() {
     }
   }
 
-  // Initialize data - CORRIGIDO com mais logs
   useEffect(() => {
     const initializeData = async () => {
       try {
-        if (talents.length > 0) {
-          console.log("Inicializando com talentos existentes:", talents.length)
-          // Prioritize featured talents
-          const featuredTalents = talents.filter((t) => t.destaque)
-          const firstTalent = featuredTalents.length > 0 ? featuredTalents[0] : talents[0]
-          console.log("Primeiro talento selecionado:", firstTalent)
-
-          setSelectedTalent(firstTalent)
-          setCurrentIndex(talents.findIndex((t) => t.id === firstTalent.id))
-
-          // CORRIGIDO: Aguardar o carregamento das fotos antes de continuar
-          console.log("Carregando fotos do primeiro talento...")
-          await loadTalentPhotos(firstTalent.id)
-          console.log("Fotos do primeiro talento carregadas")
-
-          // Preload photos for featured talents first, then others
-          const priorityTalents = [...featuredTalents, ...talents.filter((t) => !t.destaque)].slice(0, 10)
-
-          // Carregar fotos em paralelo com delay escalonado
-          priorityTalents.forEach((talent, index) => {
-            setTimeout(() => {
-              console.log(`Pré-carregando fotos do talento: ${talent.name} (ID: ${talent.id})`)
-              loadTalentPhotos(talent.id)
-            }, index * 300) // Aumentar delay para 300ms
-          })
-
-          setInitialLoadComplete(true)
-          return
-        }
-
-        console.log("Buscando talentos da API...")
-        const data = await fetchTalents()
-        if (data && data.length > 0) {
+        if (talents.length === 0) {
+          console.log("Buscando talentos da API...")
+          const data = await fetchTalents()
+          console.log("Dados retornados por fetchTalents:", data)
+          if (!data || data.length === 0) {
+            console.log("Nenhum talento retornado da API")
+            setInitialLoadComplete(true)
+            return
+          }
           console.log("Talentos carregados da API:", data.length)
-          const featuredTalents = data.filter((t) => t.destaque)
-          const firstTalent = featuredTalents.length > 0 ? featuredTalents[0] : data[0]
-          console.log("Primeiro talento da API:", firstTalent)
-
+          const prioritizedTalents = getFeaturedTalentsFirst(data)
+          const firstTalent = prioritizedTalents[0]
+          console.log("Talento selecionado:", firstTalent)
           setSelectedTalent(firstTalent)
           setCurrentIndex(data.findIndex((t) => t.id === firstTalent.id))
-
-          console.log("Carregando fotos do primeiro talento da API...")
+          // Carregar fotos do primeiro talento imediatamente
           await loadTalentPhotos(firstTalent.id)
-
-          const priorityTalents = [...featuredTalents, ...data.filter((t) => !t.destaque)].slice(0, 10)
-          priorityTalents.forEach((talent, index) => {
-            setTimeout(() => {
-              console.log(`Pré-carregando fotos: ${talent.name} (ID: ${talent.id})`)
-              loadTalentPhotos(talent.id)
-            }, index * 300)
-          })
+        } else {
+          console.log("Inicializando com talentos existentes:", talents.length)
+          if (!selectedTalent) {
+            const prioritizedTalents = getFeaturedTalentsFirst(talents)
+            const firstTalent = prioritizedTalents[0]
+            setSelectedTalent(firstTalent)
+            setCurrentIndex(talents.findIndex((t) => t.id === firstTalent.id))
+            // Carregar fotos do primeiro talento
+            await loadTalentPhotos(firstTalent.id)
+          }
         }
+
+        if (talents.length > 0 && selectedTalent) {
+          const batchSize = 3
+          const otherTalents = talents.filter((t) => t.id !== selectedTalent.id)
+          for (let i = 0; i < otherTalents.length; i += batchSize) {
+            const batch = otherTalents.slice(i, i + batchSize)
+            setTimeout(
+              () => {
+                batch.forEach((talent) => loadTalentPhotos(talent.id))
+              },
+              (i / batchSize) * 2000,
+            )
+          }
+        }
+
         setInitialLoadComplete(true)
       } catch (err) {
         console.error("Erro ao inicializar dados:", err)
@@ -2934,9 +194,9 @@ export default function TalentsGallery() {
     }
 
     initializeData()
-  }, [talents, fetchTalents])
+  }, [talents, fetchTalents, fetchTalentPhotos])
 
-  // Filter talents by tipo_talento and other criteria
+  // Filter talents
   const filteredTalents = talents.filter((talent) => {
     const matchesSearch = talent.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesFilter =
@@ -2944,697 +204,901 @@ export default function TalentsGallery() {
       (filterType === "destacados" && talent.destaque) ||
       (filterType === "disponivel" && talent.disponivel) ||
       (filterType === "ativo" && talent.ativo)
-
     const talentType = getTalentType(talent)
     const matchesGender =
       genderFilter === "all" ||
       (genderFilter === "atriz" && talentType === "atriz") ||
       (genderFilter === "ator" && talentType === "ator")
-
     return matchesSearch && matchesFilter && matchesGender
   })
 
   // Separate by tipo_talento for display
   const atoresTalents = filteredTalents.filter((talent) => getTalentType(talent) === "ator")
   const atrizesTalents = filteredTalents.filter((talent) => getTalentType(talent) === "atriz")
-  const featuredTalents = filteredTalents.filter((talent) => talent.destaque)
 
-  // Navigation handlers
+  // Pagination logic
+  const paginatedAtrizes = atrizesTalents.slice((atrizesPage - 1) * itemsPerPage, atrizesPage * itemsPerPage)
+  const paginatedAtores = atoresTalents.slice((atoresPage - 1) * itemsPerPage, atoresPage * itemsPerPage)
+  const totalAtrizesPages = Math.ceil(atrizesTalents.length / itemsPerPage)
+  const totalAtoresPages = Math.ceil(atoresTalents.length / itemsPerPage)
+
   const handlePrevious = () => {
     if (talents.length === 0) return
-    const newIndex = currentIndex > 0 ? currentIndex - 1 : talents.length - 1
-    setCurrentIndex(newIndex)
-    const talent = talents[newIndex]
+    const prioritizedTalents = getFeaturedTalentsFirst(talents)
+    const currentPriorityIndex = prioritizedTalents.findIndex((t) => t.id === selectedTalent?.id)
+    const newPriorityIndex = currentPriorityIndex > 0 ? currentPriorityIndex - 1 : prioritizedTalents.length - 1
+    const talent = prioritizedTalents[newPriorityIndex]
+    const originalIndex = talents.findIndex((t) => t.id === talent.id)
+    setCurrentIndex(originalIndex)
     setSelectedTalent(talent)
     loadTalentPhotos(talent.id)
   }
 
   const handleNext = () => {
     if (talents.length === 0) return
-    const newIndex = currentIndex < talents.length - 1 ? currentIndex + 1 : 0
-    setCurrentIndex(newIndex)
-    const talent = talents[newIndex]
+    const prioritizedTalents = getFeaturedTalentsFirst(talents)
+    const currentPriorityIndex = prioritizedTalents.findIndex((t) => t.id === selectedTalent?.id)
+    const newPriorityIndex = currentPriorityIndex < prioritizedTalents.length - 1 ? currentPriorityIndex + 1 : 0
+    const talent = prioritizedTalents[newPriorityIndex]
+    const originalIndex = talents.findIndex((t) => t.id === talent.id)
+    setCurrentIndex(originalIndex)
     setSelectedTalent(talent)
     loadTalentPhotos(talent.id)
   }
 
   const handleTalentClick = (talent) => {
-    const talentIndex = talents.findIndex((t) => t.id === talent.id)
-    setCurrentIndex(talentIndex)
-    setSelectedTalent(talent)
-    loadTalentPhotos(talent.id)
-    heroRef.current?.scrollIntoView({ behavior: "smooth" })
+    handleViewDetails(talent.id)
   }
 
-  const toggleFavorite = (talentId) => {
-    setFavorites((prev) => {
-      const newFavorites = new Set(prev)
-      if (newFavorites.has(talentId)) {
-        newFavorites.delete(talentId)
-      } else {
-        newFavorites.add(talentId)
-      }
-      return newFavorites
-    })
-  }
-
-  // Get main photo for talent - CORRIGIDO para sempre mostrar a primeira foto
+  // Get main photo for talent - CORRIGIDO
   const getTalentMainPhoto = (talentId) => {
+    const imageKey = `talent-${talentId}-main`
+    if (loadedImages[imageKey]) {
+      return loadedImages[imageKey]
+    }
+
     const photos = talentPhotos[talentId]
-    console.log(`getTalentMainPhoto para talento ${talentId}:`, photos)
     if (photos && photos.length > 0) {
-      // Sempre usar a primeira foto disponível, independente do release
       const firstPhoto = photos[0]
-      console.log(`Primeira foto para talento ${talentId}:`, firstPhoto)
       if (firstPhoto && firstPhoto.url) {
-        console.log(`URL da foto para talento ${talentId}:`, firstPhoto.url)
         return firstPhoto.url
       }
     }
-    console.log(`Nenhuma foto encontrada para talento ${talentId}, usando placeholder`)
     return "/placeholder.svg?height=600&width=450&text=Sem+Foto"
   }
 
-  // Loading state - FUNDO CLARO
-  if (loading && !initialLoadComplete && talents.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-          <div className="relative mb-8">
-            <div className="w-20 h-20 border-2 border-amber-500 rounded-full animate-spin border-t-transparent mx-auto"></div>
-            <Crown className="w-8 h-8 text-amber-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-          </div>
-          <p className="text-gray-800 font-light tracking-wider">CARREGANDO TALENTOS EXCLUSIVOS</p>
-        </motion.div>
-      </div>
-    )
-  }
-
-  if (initialLoadComplete && talents.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-md mx-auto p-8"
-        >
-          <Crown className="w-16 h-16 text-amber-500 mx-auto mb-6" />
-          <h2 className="text-2xl font-light text-gray-800 mb-2 tracking-wider">NENHUM TALENTO ENCONTRADO</h2>
-          <p className="text-gray-600">{error ? `Erro: ${error}` : "Não há talentos disponíveis no momento."}</p>
-        </motion.div>
-      </div>
-    )
-  }
-
-  const currentTalent = selectedTalent || (talents.length > 0 ? talents[0] : null)
-  if (!currentTalent) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-amber-500 mx-auto mb-4" />
-          <p className="text-gray-800 font-light tracking-wider">PREPARANDO GALERIA</p>
-        </motion.div>
-      </div>
-    )
-  }
-
-  const currentTalentPhotos = talentPhotos[currentTalent.id] || []
   const currentHeroPhoto = currentTalentPhotos[heroPhotoIndex] || {}
 
+  const handlePrevTalent = () => {
+    setCurrentPhotoIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : currentTalent?.photos?.length - 1))
+  }
+
+  const handleNextTalent = () => {
+    setCurrentPhotoIndex((prevIndex) => (prevIndex < currentTalent?.photos?.length - 1 ? prevIndex + 1 : 0))
+  }
+
+  const handleViewDetails = (talentId) => {
+    const talent = talents.find((t) => t.id === talentId)
+    setSelectedTalentForDetails(talent)
+    setShowDetails(true)
+  }
+
+  const handleBackFromDetails = () => {
+    setShowDetails(false)
+    setSelectedTalentForDetails(null)
+  }
+
+  const handleImageLoad = (imageKey, imageUrl) => {
+    setLoadedImages((prev) => ({
+      ...prev,
+      [imageKey]: imageUrl,
+    }))
+  }
+
+  const handleImageError = (imageKey, talentId) => {
+    const errorKey = `${imageKey}-error`
+    if (imageErrors[errorKey]) {
+      return // Already handled this error, prevent infinite loops
+    }
+
+    setImageErrors((prev) => ({
+      ...prev,
+      [errorKey]: true,
+    }))
+
+    // Don't update loadedImages for errors to keep placeholder
+  }
+
+  const handleNavigation = (section) => {
+    console.log(`[v0] Navegando para seção: ${section}`)
+
+    if (section === "dashboard") {
+      console.log(`[v0] Redirecionando para dashboard`)
+
+      if (onPageNavigate && typeof onPageNavigate === "function") {
+        onPageNavigate("dashboard")
+        return
+      }
+
+      // Try to call parent navigation function if available
+      if (window.navigateTo && typeof window.navigateTo === "function") {
+        window.navigateTo("dashboard")
+        return
+      }
+
+      // Try to dispatch a custom event for parent components to listen
+      window.dispatchEvent(new CustomEvent("navigate", { detail: { route: "dashboard" } }))
+
+      // Fallback: try to navigate using window.location if in a single-page setup
+      if (window.location.hash !== undefined) {
+        window.location.hash = "#dashboard"
+      }
+
+      return
+    }
+
+    // Handle section scrolling
+    const element = document.getElementById(section)
+    if (element) {
+      console.log(`[v0] Elemento encontrado para ${section}, fazendo scroll`)
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    } else {
+      console.log(`[v0] Elemento não encontrado para seção: ${section}`)
+    }
+  }
+
+  if (showDetails && selectedTalentForDetails) {
+    return <TalentDetails talent={selectedTalentForDetails} onBack={handleBackFromDetails} />
+  }
+
   return (
-    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-gray-50 to-white text-gray-900">
-      {/* Hero Section - Fashion Magazine Style */}
-      <motion.div
-        ref={heroRef}
-        style={{ y: heroY, opacity: heroOpacity }}
-        className="relative h-screen overflow-hidden"
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${currentTalent.id}-${heroPhotoIndex}`}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="absolute inset-0"
-          >
-            {/* Background Image - USANDO APENAS FOTOS DA API */}
-            <div className="absolute inset-0">
-              {currentHeroPhoto.url || (currentTalentPhotos.length > 0 && currentTalentPhotos[0].url) ? (
-                <img
-                  src={currentHeroPhoto.url || currentTalentPhotos[0]?.url || "/placeholder.svg"}
-                  alt={`${currentTalent.name} - Foto ${heroPhotoIndex + 1}`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    console.error(`Erro ao carregar foto: ${currentHeroPhoto.url || currentTalentPhotos[0]?.url}`)
-                    e.target.src = "/placeholder.svg?height=1080&width=1920&text=Erro+ao+Carregar"
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+    <>
+      <Header onNavigate={handleNavigation} />
+      <div ref={containerRef} className="min-h-screen bg-white text-gray-900">
+        {/* Hero Section - Redesign completo para ser digno de prêmio */}
+        <motion.div
+          ref={heroRef}
+          style={{ y: heroY, opacity: heroOpacity }}
+          className="relative min-h-[98vh] lg:h-[100vh] overflow-hidden bg-white" // Aumentou altura de min-h-[95vh] para min-h-[98vh]
+        >
+          {currentTalent ? (
+            <section className="relative min-h-[98vh] lg:h-[100vh] bg-white overflow-hidden">
+              <div className="h-full flex flex-col lg:flex-row">
+                <div className="lg:hidden relative h-96 sm:h-[450px] order-1">
                   {loadingPhotos[currentTalent.id] ? (
-                    <div className="text-center">
-                      <Loader2 className="w-16 h-16 animate-spin text-amber-500 mx-auto mb-4" />
-                      <p className="text-gray-700 font-light tracking-wider">CARREGANDO FOTOS...</p>
+                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                      <Loader2 className="w-12 h-12 animate-spin text-amber-500" />
                     </div>
+                  ) : currentTalentPhotos.length > 0 && currentHeroPhoto.url ? (
+                    <img
+                      src={currentHeroPhoto.url || "/placeholder.svg"}
+                      alt={`${currentTalent.name} - Foto ${heroPhotoIndex + 1}`}
+                      className="w-full h-full object-contain"
+                      onLoad={() => handleImageLoad(`hero-${currentTalent.id}-${heroPhotoIndex}`, currentHeroPhoto.url)}
+                      onError={(e) => {
+                        handleImageError(`hero-${currentTalent.id}-${heroPhotoIndex}`, currentTalent.id)
+                        e.target.src = "/placeholder.svg?height=450&width=400"
+                      }}
+                    />
                   ) : (
-                    <div className="text-center">
-                      <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500 font-light tracking-wider">NENHUMA FOTO DISPONÍVEL</p>
+                    <img
+                      src="/placeholder.svg?height=450&width=400"
+                      alt={currentTalent.name}
+                      className="w-full h-full object-contain"
+                    />
+                  )}
+                  {/* Contador de fotos mobile */}
+                  {currentTalentPhotos.length > 1 && (
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-sm">
+                      <div className="text-right">
+                        <div className="text-lg font-light text-gray-900">
+                          {String(heroPhotoIndex + 1).padStart(2, "0")}
+                        </div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wider">
+                          DE {String(currentTalentPhotos.length).padStart(2, "0")} FOTOS
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* Indicadores de foto mobile */}
+                  {currentTalentPhotos.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                      <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full">
+                        {currentTalentPhotos.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setHeroPhotoIndex(index)}
+                            className={`transition-all duration-300 ${
+                              index === heroPhotoIndex
+                                ? "w-6 h-1 bg-amber-400"
+                                : "w-3 h-1 bg-gray-300 hover:bg-gray-400"
+                            } rounded-full`}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/50 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-white/30" />
-            </div>
 
-            {/* Content Overlay */}
-            <div className="relative z-10 h-full flex items-center">
-              <div className="max-w-7xl mx-auto px-8 w-full">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                  {/* Left Content */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3, duration: 0.8 }}
-                    className="space-y-8"
-                  >
-                    {/* Featured Badge */}
-                    {currentTalent.destaque && (
-                      <motion.div
-                        initial={{ scale: 0, rotate: -10 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                        className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-black px-6 py-3 rounded-none font-bold text-sm tracking-wider"
-                      >
-                        <Crown className="w-5 h-5" />
-                        TALENTO EXCLUSIVO
-                      </motion.div>
-                    )}
-
-                    {/* Name */}
-                    <div>
-                      <motion.h1
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.8 }}
-                        className="text-6xl md:text-8xl font-thin tracking-tight leading-none mb-4 text-gray-900"
-                      >
-                        {currentTalent.name.split(" ")[0]}
-                      </motion.h1>
-                      {currentTalent.name.split(" ").length > 1 && (
-                        <motion.h2
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6, duration: 0.8 }}
-                          className="text-4xl md:text-6xl font-light tracking-wider text-gray-600"
-                        >
-                          {currentTalent.name.split(" ").slice(1).join(" ")}
-                        </motion.h2>
+                <div className="w-full lg:w-[45%] flex flex-col justify-center px-8 lg:px-16 xl:px-24 py-8 lg:py-16 relative z-10 order-2">
+                  <div className="max-w-lg mx-auto lg:mx-0">
+                    {/* Adicionou mx-auto para centralizar no mobile */}
+                    <div className="mb-6 lg:mb-12 text-center lg:text-left">
+                      {/* Centralizou no mobile */}
+                      {currentTalent.destaque && (
+                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 text-black px-4 py-2 rounded-sm font-medium text-sm mb-6 lg:mb-12">
+                          <Crown className="w-4 h-4" />
+                          TALENTO EXCLUSIVO
+                        </div>
                       )}
+                      <div className="space-y-1 lg:space-y-4">
+                        <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-light text-gray-900 leading-none">
+                          {currentTalent.name?.split(" ")[0] || "Nome"}
+                        </h1>
+                        <h2 className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-light text-gray-600 leading-none">
+                          {currentTalent.name?.split(" ").slice(1).join(" ") || ""}
+                        </h2>
+                      </div>
                     </div>
-
-                    {/* Details */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.8, duration: 0.6 }}
-                      className="flex flex-wrap gap-6 text-sm tracking-wider"
-                    >
+                    <div className="space-y-4 lg:space-y-8 mb-6 lg:mb-12 text-center lg:text-left">
+                      {/* Centralizou no mobile */}
                       {currentTalent.birth_date && (
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <div className="w-px h-4 bg-amber-500"></div>
-                          <span>
+                        <div className="flex items-center gap-4 justify-center lg:justify-start">
+                          {/* Centralizou no mobile */}
+                          <div className="w-8 h-px bg-gradient-to-r from-amber-400 to-transparent"></div>
+                          <span className="text-sm lg:text-base text-gray-600 font-medium tracking-wide">
                             {new Date().getFullYear() - new Date(currentTalent.birth_date).getFullYear()} ANOS
                           </span>
                         </div>
                       )}
                       {currentTalent.height && (
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <div className="w-px h-4 bg-amber-500"></div>
-                          <span>{currentTalent.height}</span>
+                        <div className="flex items-center gap-4 justify-center lg:justify-start">
+                          {/* Centralizou no mobile */}
+                          <div className="w-8 h-px bg-gradient-to-r from-amber-400 to-transparent"></div>
+                          <span className="text-sm lg:text-base text-gray-600 font-medium tracking-wide">
+                            {currentTalent.height}
+                          </span>
                         </div>
                       )}
                       {currentTalent.tipo_talento && (
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <div className="w-px h-4 bg-amber-500"></div>
-                          <span>{renderTalentType(currentTalent).toUpperCase()}</span>
-                        </div>
-                      )}
-                    </motion.div>
-
-                    {/* Instagram */}
-                    {currentTalent.instagram && (
-                      <motion.a
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 1, duration: 0.6 }}
-                        href={`https://instagram.com/${currentTalent.instagram.replace(/^@/, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-3 border border-gray-400 hover:border-amber-500 px-6 py-3 transition-all duration-300 group text-gray-800"
-                      >
-                        <Instagram className="w-5 h-5 group-hover:text-amber-500 transition-colors" />
-                        <span className="tracking-wider">@{currentTalent.instagram}</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </motion.a>
-                    )}
-                  </motion.div>
-
-                  {/* Right Content - Stats */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5, duration: 0.8 }}
-                    className="space-y-8 lg:text-right"
-                  >
-                    {/* Photo Counter */}
-                    {currentTalentPhotos.length > 0 && (
-                      <div className="text-right">
-                        <div className="text-4xl font-thin text-amber-500 mb-2">
-                          {String(heroPhotoIndex + 1).padStart(2, "0")}
-                        </div>
-                        <div className="text-sm tracking-wider text-gray-600">
-                          DE {String(currentTalentPhotos.length).padStart(2, "0")} FOTOS
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Loading indicator for photos */}
-                    {loadingPhotos[currentTalent.id] && (
-                      <div className="text-right">
-                        <Loader2 className="w-6 h-6 animate-spin text-amber-500 ml-auto mb-2" />
-                        <div className="text-sm tracking-wider text-gray-600">CARREGANDO FOTOS...</div>
-                      </div>
-                    )}
-
-                    {/* Skills */}
-                    <div className="space-y-4">
-                      {currentTalent.can_sing && (
-                        <div className="flex items-center justify-end gap-3">
-                          <span className="text-sm tracking-wider text-gray-700">CANTO</span>
-                          <Music className="w-4 h-4 text-amber-500" />
-                        </div>
-                      )}
-                      {currentTalent.languages && currentTalent.languages.length > 0 && (
-                        <div className="flex items-center justify-end gap-3">
-                          <span className="text-sm tracking-wider text-gray-700">
-                            {currentTalent.languages.length} IDIOMAS
+                        <div className="flex items-center gap-4 justify-center lg:justify-start">
+                          {/* Centralizou no mobile */}
+                          <div className="w-8 h-px bg-gradient-to-r from-amber-400 to-transparent"></div>
+                          <span className="text-sm lg:text-base text-gray-600 font-medium tracking-wide">
+                            {renderTalentType(currentTalent).toUpperCase()}
                           </span>
-                          <Languages className="w-4 h-4 text-amber-500" />
-                        </div>
-                      )}
-                      {currentTalent.instruments && currentTalent.instruments.length > 0 && (
-                        <div className="flex items-center justify-end gap-3">
-                          <span className="text-sm tracking-wider text-gray-700">
-                            {currentTalent.instruments.length} INSTRUMENTOS
-                          </span>
-                          <Music className="w-4 w-4 text-amber-500" />
                         </div>
                       )}
                     </div>
-                  </motion.div>
+                    <div className="space-y-4 lg:space-y-8 text-center lg:text-left">
+                      {/* Centralizou no mobile */}
+                      <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+                        {/* Centralizou no mobile */}
+                        {currentTalent.can_sing && (
+                          <div className="flex items-center gap-2 px-3 py-1 border border-gray-200 rounded-full">
+                            <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
+                            <span className="text-xs lg:text-sm text-gray-600">CANTO</span>
+                          </div>
+                        )}
+                        {currentTalent.languages && currentTalent.languages.length > 0 && (
+                          <div className="flex items-center gap-2 px-3 py-1 border border-gray-200 rounded-full">
+                            <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
+                            <span className="text-xs lg:text-sm text-gray-600">
+                              {currentTalent.languages.length} IDIOMAS
+                            </span>
+                          </div>
+                        )}
+                        {currentTalent.instruments && currentTalent.instruments.length > 0 && (
+                          <div className="flex items-center gap-2 px-3 py-1 border border-gray-200 rounded-full">
+                            <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
+                            <span className="text-xs lg:text-sm text-gray-600">
+                              {currentTalent.instruments.length} INSTRUMENTOS
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      {currentTalent.instagram && (
+                        <div className="pt-2 lg:pt-8 flex justify-center lg:justify-start">
+                          {/* Centralizou no mobile */}
+                          <a
+                            href={`https://instagram.com/${currentTalent.instagram?.replace("@", "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-3 px-6 py-3 border border-gray-300 rounded-sm hover:border-gray-400 transition-colors group"
+                          >
+                            <Instagram className="w-4 h-4 text-gray-600 group-hover:text-gray-900 transition-colors" />
+                            <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                              {currentTalent.instagram}
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                          </a>
+                        </div>
+                      )}
+                      <div className="pt-4 lg:pt-6 flex justify-center lg:justify-start">
+                        <button
+                          onClick={() => handleViewDetails(currentTalent.id)}
+                          className="inline-flex items-center gap-3 px-8 py-4 bg-amber-400 hover:bg-amber-500 text-black rounded-sm transition-colors group font-medium"
+                        >
+                          <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                          <span className="text-sm tracking-wide">VER DETALHES</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hidden lg:block lg:w-[55%] relative order-1">
+                  <div className="h-full flex items-center justify-center p-8">
+                    <div className="relative w-full max-w-md h-full max-h-[600px]">
+                      {loadingPhotos[currentTalent.id] ? (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                          <Loader2 className="w-16 h-16 animate-spin text-amber-500" />
+                        </div>
+                      ) : currentTalentPhotos.length > 0 && currentHeroPhoto.url ? (
+                        <img
+                          src={currentHeroPhoto.url || "/placeholder.svg"}
+                          alt={`${currentTalent.name} - Foto ${heroPhotoIndex + 1}`}
+                          className="w-full h-full object-contain"
+                          onLoad={() =>
+                            handleImageLoad(`hero-desktop-${currentTalent.id}-${heroPhotoIndex}`, currentHeroPhoto.url)
+                          }
+                          onError={(e) => {
+                            handleImageError(`hero-desktop-${currentTalent.id}-${heroPhotoIndex}`, currentTalent.id)
+                            e.target.src = "/placeholder.svg?height=600&width=400"
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src="/placeholder.svg?height=600&width=400"
+                          alt={currentTalent.name}
+                          className="w-full h-full object-contain"
+                        />
+                      )}
+
+                      {/* Contador de fotos */}
+                      {currentTalentPhotos.length > 1 && (
+                        <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-sm">
+                          <div className="text-right">
+                            <div className="text-2xl font-light text-gray-900">
+                              {String(heroPhotoIndex + 1).padStart(2, "0")}
+                            </div>
+                            <div className="text-xs text-gray-500 uppercase tracking-wider">
+                              DE {String(currentTalentPhotos.length).padStart(2, "0")} FOTOS
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Indicadores de foto (desktop) */}
+                  {currentTalentPhotos.length > 1 && (
+                    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+                      <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
+                        {currentTalentPhotos.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setHeroPhotoIndex(index)}
+                            className={`transition-all duration-300 ${
+                              index === heroPhotoIndex
+                                ? "w-8 h-1 bg-amber-400"
+                                : "w-4 h-1 bg-gray-300 hover:bg-gray-400"
+                            } rounded-full`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+              {/* Botões de navegação */}
+              {talents.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrevious}
+                    className="absolute left-4 lg:left-8 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full flex items-center justify-center hover:bg-white hover:border-gray-300 transition-all z-20"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                  </button>
 
-            {/* Navigation */}
-            <div className="absolute inset-y-0 left-0 flex items-center z-20">
-              <motion.button
-                whileHover={{ scale: 1.1, x: -5 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handlePrevious}
-                className="ml-8 w-12 h-12 border border-gray-400 hover:border-amber-500 hover:bg-amber-500/10 transition-all duration-300 flex items-center justify-center text-gray-800"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </motion.button>
+                  <button
+                    onClick={handleNext}
+                    className="absolute right-4 lg:right-8 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full flex items-center justify-center hover:bg-white hover:border-gray-300 transition-all z-20"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                  </button>
+                </>
+              )}
+            </section>
+          ) : (
+            // Estado de loading
+            <div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50 flex items-center justify-center">
+              <div className="text-center">
+                {!initialLoadComplete ? (
+                  <>
+                    <div className="relative mb-12">
+                      <div className="w-24 h-24 border border-amber-500/30 animate-spin mx-auto">
+                        <div className="absolute inset-2 border-t-2 border-amber-500 animate-spin"></div>
+                      </div>
+                      <Crown className="w-10 h-10 text-amber-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                    </div>
+                    <p className="text-gray-700 font-light tracking-[0.2em] text-xl">CARREGANDO TALENTOS EXCLUSIVOS</p>
+                  </>
+                ) : talents.length === 0 ? (
+                  <>
+                    <Crown className="w-20 h-20 text-amber-500 mx-auto mb-8" />
+                    <p className="text-gray-700 font-light tracking-[0.2em] text-xl">NENHUM TALENTO ENCONTRADO</p>
+                    {error && <p className="text-gray-500 text-sm mt-4">Erro: {error}</p>}
+                  </>
+                ) : (
+                  <>
+                    <Crown className="w-20 h-20 text-amber-500 mx-auto mb-8" />
+                    <p className="text-gray-700 font-light tracking-[0.2em] text-xl">PREPARANDO GALERIA DE TALENTOS</p>
+                  </>
+                )}
+              </div>
             </div>
+          )}
+        </motion.div>
 
-            <div className="absolute inset-y-0 right-0 flex items-center z-20">
-              <motion.button
-                whileHover={{ scale: 1.1, x: 5 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handleNext}
-                className="mr-8 w-12 h-12 border border-gray-400 hover:border-amber-500 hover:bg-amber-500/10 transition-all duration-300 flex items-center justify-center text-gray-800"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </motion.button>
-            </div>
-
-            {/* Photo Progress */}
-            {currentTalentPhotos.length > 1 && (
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-                <div className="flex gap-2">
-                  {currentTalentPhotos.map((_, idx) => (
-                    <motion.button
-                      key={idx}
-                      whileHover={{ scale: 1.2 }}
-                      onClick={() => setHeroPhotoIndex(idx)}
-                      className={`w-8 h-px transition-all duration-300 ${
-                        heroPhotoIndex === idx ? "bg-amber-500" : "bg-gray-400 hover:bg-gray-600"
-                      }`}
-                    />
-                  ))}
+        {/* Gender Sections */}
+        <section className="py-24 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-8">
+            {/* Filters */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="flex flex-col md:flex-row gap-8 items-center justify-between mb-16"
+            >
+              <div className="flex items-center gap-8">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="BUSCAR TALENTOS..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="bg-transparent border-b border-gray-400 focus:border-amber-500 px-0 py-3 text-gray-900 placeholder-gray-500 focus:outline-none transition-colors tracking-wider"
+                  />
                 </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="bg-transparent border-b border-gray-400 focus:border-amber-500 px-0 py-3 text-gray-900 focus:outline-none transition-colors tracking-wider min-w-[120px] cursor-pointer hover:border-gray-600 flex items-center justify-between">
+                    <span>
+                      {filterType === "all" && "TODOS"}
+                      {filterType === "destacados" && "DESTAQUES"}
+                      {filterType === "disponivel" && "DISPONÍVEIS"}
+                      {filterType === "ativo" && "ATIVOS"}
+                    </span>
+                    <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent className="bg-white border border-gray-200 shadow-lg">
+                    <DropdownMenuItem onClick={() => setFilterType("all")} className="cursor-pointer hover:bg-gray-50">
+                      TODOS
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setFilterType("destacados")}
+                      className="cursor-pointer hover:bg-gray-50"
+                    >
+                      DESTAQUES
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setFilterType("disponivel")}
+                      className="cursor-pointer hover:bg-gray-50"
+                    >
+                      DISPONÍVEIS
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setFilterType("ativo")}
+                      className="cursor-pointer hover:bg-gray-50"
+                    >
+                      ATIVOS
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div className="flex items-center gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setGenderFilter("all")}
+                  className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
+                    genderFilter === "all"
+                      ? "border-amber-500 text-amber-500"
+                      : "border-gray-400 text-gray-700 hover:border-gray-600"
+                  }`}
+                >
+                  TODOS
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setGenderFilter("atriz")}
+                  className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
+                    genderFilter === "atriz"
+                      ? "border-amber-500 text-amber-500"
+                      : "border-gray-400 text-gray-700 hover:border-gray-600"
+                  }`}
+                >
+                  ATRIZES
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setGenderFilter("ator")}
+                  className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
+                    genderFilter === "ator"
+                      ? "border-amber-500 text-amber-500"
+                      : "border-gray-400 text-gray-700 hover:border-gray-600"
+                  }`}
+                >
+                  ATORES
+                </motion.button>
+              </div>
+            </motion.div>
+
+            {/* Atrizes Section */}
+            {(genderFilter === "all" || genderFilter === "atriz") && atrizesTalents.length > 0 && (
+              <div id="atrizes" className="mb-24">
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8 }}
+                  viewport={{ once: true }}
+                  className="flex items-center gap-4 mb-12"
+                >
+                  <h3 className="text-3xl md:text-4xl font-thin tracking-wider text-gray-900">ATRIZES</h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-pink-400 to-transparent"></div>
+                  <span className="text-pink-500 text-sm tracking-wider">{atrizesTalents.length} TALENTOS</span>
+                </motion.div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {paginatedAtrizes.map((talent, index) => {
+                    const mainPhotoUrl = getTalentMainPhoto(talent.id)
+                    return (
+                      <motion.div
+                        key={talent.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.05 }}
+                        viewport={{ once: true }}
+                        whileHover={{ y: -5, scale: 1.02 }}
+                        className="group cursor-pointer"
+                        onClick={() => handleTalentClick(talent)}
+                      >
+                        <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-gray-100 rounded-lg">
+                          {loadingPhotos[talent.id] ? (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                              <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+                            </div>
+                          ) : (
+                            <img
+                              src={mainPhotoUrl || "/placeholder.svg"}
+                              alt={talent.name}
+                              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                              onLoad={() => handleImageLoad(`talent-${talent.id}-main`, mainPhotoUrl)}
+                              onError={(e) => {
+                                handleImageError(`talent-${talent.id}-main`, talent.id)
+                                e.target.src = "/placeholder.svg?height=400&width=300"
+                              }}
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          {talent.destaque && (
+                            <div className="absolute top-3 right-3">
+                              <Crown className="w-4 h-4 text-amber-500" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <h4 className="font-light tracking-wider mb-1 group-hover:text-pink-500 transition-colors text-gray-900">
+                            {talent.name}
+                          </h4>
+                          <p className="text-gray-600 text-xs tracking-wider">
+                            {talent.birth_date
+                              ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
+                              : ""}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+                {/* Pagination for Atrizes */}
+                {totalAtrizesPages > 1 && (
+                  <div className="flex justify-center items-center gap-4 mt-12">
+                    <button
+                      onClick={() => setAtrizesPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={atrizesPage === 1}
+                      className="px-4 py-2 border border-gray-400 text-gray-700 hover:border-pink-500 hover:text-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <div className="flex gap-2">
+                      {Array.from({ length: totalAtrizesPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setAtrizesPage(page)}
+                          className={`px-3 py-1 text-sm transition-colors ${
+                            atrizesPage === page ? "bg-pink-500 text-white" : "text-gray-700 hover:text-pink-500"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setAtrizesPage((prev) => Math.min(prev + 1, totalAtrizesPages))}
+                      disabled={atrizesPage === totalAtrizesPages}
+                      className="px-4 py-2 border border-gray-400 text-gray-700 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
-          </motion.div>
-        </AnimatePresence>
-      </motion.div>
 
-      {/* Featured Talents Section */}
-      {featuredTalents.length > 0 && (
-        <section className="py-24 bg-gradient-to-b from-white to-gray-50">
+            {/* Atores Section */}
+            {(genderFilter === "all" || genderFilter === "ator") && atoresTalents.length > 0 && (
+              <div id="atores">
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8 }}
+                  viewport={{ once: true }}
+                  className="flex items-center gap-4 mb-12"
+                >
+                  <h3 className="text-3xl md:text-4xl font-thin tracking-wider text-gray-900">ATORES</h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-blue-400 to-transparent"></div>
+                  <span className="text-blue-500 text-sm tracking-wider">{atoresTalents.length} TALENTOS</span>
+                </motion.div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {paginatedAtores.map((talent, index) => {
+                    const mainPhotoUrl = getTalentMainPhoto(talent.id)
+                    return (
+                      <motion.div
+                        key={talent.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.05 }}
+                        viewport={{ once: true }}
+                        whileHover={{ y: -5, scale: 1.02 }}
+                        className="group cursor-pointer"
+                        onClick={() => handleTalentClick(talent)}
+                      >
+                        <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-gray-100 rounded-lg">
+                          {loadingPhotos[talent.id] ? (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                              <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                            </div>
+                          ) : (
+                            <img
+                              src={mainPhotoUrl || "/placeholder.svg"}
+                              alt={talent.name}
+                              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                              onLoad={() => handleImageLoad(`talent-${talent.id}-main`, mainPhotoUrl)}
+                              onError={(e) => {
+                                handleImageError(`talent-${talent.id}-main`, talent.id)
+                                e.target.src = "/placeholder.svg?height=400&width=300"
+                              }}
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          {talent.destaque && (
+                            <div className="absolute top-3 right-3">
+                              <Crown className="w-4 h-4 text-amber-500" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <h4 className="font-light tracking-wider mb-1 group-hover:text-blue-500 transition-colors text-gray-900">
+                            {talent.name}
+                          </h4>
+                          <p className="text-gray-600 text-xs tracking-wider">
+                            {talent.birth_date
+                              ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
+                              : ""}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+                {/* Pagination for Atores */}
+                {totalAtoresPages > 1 && (
+                  <div className="flex justify-center items-center gap-4 mt-12">
+                    <button
+                      onClick={() => setAtoresPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={atoresPage === 1}
+                      className="px-4 py-2 border border-gray-400 text-gray-700 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <div className="flex gap-2">
+                      {Array.from({ length: totalAtoresPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setAtoresPage(page)}
+                          className={`px-3 py-1 text-sm transition-colors ${
+                            atoresPage === page ? "bg-blue-500 text-white" : "text-gray-700 hover:text-blue-500"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setAtoresPage((prev) => Math.min(prev + 1, totalAtoresPages))}
+                      disabled={atoresPage === totalAtoresPages}
+                      className="px-4 py-2 border border-gray-400 text-gray-700 hover:border-blue-500 hover:text-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section id="contato" className="py-24 bg-gradient-to-br from-gray-50 to-white">
           <div className="max-w-7xl mx-auto px-8">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.6 }}
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl md:text-6xl font-thin tracking-wider mb-4 text-gray-900">
-                TALENTOS <span className="text-amber-500">EXCLUSIVOS</span>
-              </h2>
-              <div className="w-24 h-px bg-amber-500 mx-auto"></div>
+              <h3 className="text-4xl md:text-5xl font-thin tracking-wider text-gray-900 mb-6">CONTATO</h3>
+              <div className="w-24 h-px bg-gradient-to-r from-amber-400 to-transparent mx-auto mb-8"></div>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Conecte-se conosco para descobrir talentos excepcionais que transformarão seu projeto em uma experiência
+                inesquecível.
+              </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredTalents.slice(0, 6).map((talent, index) => {
-                const mainPhotoUrl = getTalentMainPhoto(talent.id)
-                return (
-                  <motion.div
-                    key={talent.id}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    whileHover={{ y: -10 }}
-                    className="group cursor-pointer"
-                    onClick={() => handleTalentClick(talent)}
-                  >
-                    <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-gray-100 rounded-lg">
-                      {loadingPhotos[talent.id] ? (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-                        </div>
-                      ) : (
-                        <img
-                          src={mainPhotoUrl || "/placeholder.svg"}
-                          alt={talent.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          onError={(e) => {
-                            e.target.src = "/placeholder.svg?height=600&width=450"
-                          }}
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+                className="space-y-8"
+              >
+                <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                  <div className="flex items-start gap-6">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                         />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      {/* Crown badge */}
-                      <div className="absolute top-4 right-4">
-                        <Crown className="w-6 h-6 text-amber-500" />
-                      </div>
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="w-12 h-12 border border-white/70 flex items-center justify-center">
-                          <Eye className="w-6 h-6 text-white" />
-                        </div>
-                      </div>
+                      </svg>
                     </div>
-                    <div className="text-center">
-                      <h3 className="text-2xl font-light tracking-wider mb-2 group-hover:text-amber-500 transition-colors text-gray-900">
-                        {talent.name}
-                      </h3>
-                      <p className="text-gray-600 text-sm tracking-wider">{renderTalentType(talent).toUpperCase()}</p>
+                    <div>
+                      <h4 className="text-xl font-medium text-gray-900 mb-2">Email Corporativo</h4>
+                      <p className="text-gray-600 mb-4">Para parcerias e contratações profissionais</p>
+                      <a
+                        href="mailto:contato@megastage.com"
+                        className="text-amber-600 hover:text-amber-700 font-medium transition-colors"
+                      >
+                        contato@megastage.com
+                      </a>
                     </div>
-                  </motion.div>
-                )
-              })}
+                  </div>
+                </div>
+
+                <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                  <div className="flex items-start gap-6">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-medium text-gray-900 mb-2">Atendimento Direto</h4>
+                      <p className="text-gray-600 mb-4">Disponível de segunda a sexta, 9h às 18h</p>
+                      <a
+                        href="tel:+5511999999999"
+                        className="text-amber-600 hover:text-amber-700 font-medium transition-colors"
+                      >
+                        (11) 99999-9999
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                  <div className="flex items-start gap-6">
+                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-medium text-gray-900 mb-2">Localização</h4>
+                      <p className="text-gray-600 mb-4">Atendemos em todo território nacional</p>
+                      <span className="text-amber-600 font-medium">São Paulo, Brasil</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+                className="bg-gradient-to-br from-amber-50 to-amber-100 p-12 rounded-2xl"
+              >
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-amber-400 rounded-full flex items-center justify-center mx-auto mb-8">
+                    <Crown className="w-8 h-8 text-white" />
+                  </div>
+                  <h4 className="text-2xl font-light text-gray-900 mb-6 tracking-wide">
+                    PRONTO PARA DESCOBRIR
+                    <br />
+                    <span className="font-medium">TALENTOS EXCEPCIONAIS?</span>
+                  </h4>
+                  <p className="text-gray-700 mb-8 leading-relaxed">
+                    Nossa equipe especializada está pronta para conectar você aos melhores profissionais do mercado.
+                    Cada talento é cuidadosamente selecionado para garantir excelência em seu projeto.
+                  </p>
+                  <div className="space-y-4">
+                    <a
+                      href="mailto:contato@megastage.com"
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-amber-400 hover:bg-amber-500 text-black rounded-lg transition-all duration-300 font-medium group shadow-lg hover:shadow-xl"
+                    >
+                      <svg
+                        className="w-5 h-5 group-hover:scale-110 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <span className="tracking-wide">INICIAR CONVERSA</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </a>
+                    <p className="text-sm text-gray-600">Resposta garantida em até 24 horas</p>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </section>
-      )}
-
-      {/* Gender Sections */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-8">
-          {/* Filters */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="flex flex-col md:flex-row gap-8 items-center justify-between mb-16"
-          >
-            <div className="flex items-center gap-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="BUSCAR TALENTOS..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-transparent border-b border-gray-400 focus:border-amber-500 px-0 py-3 text-gray-900 placeholder-gray-500 focus:outline-none transition-colors tracking-wider"
-                />
-              </div>
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="bg-transparent border-b border-gray-400 focus:border-amber-500 px-0 py-3 text-gray-900 focus:outline-none transition-colors tracking-wider"
-              >
-                <option value="all" className="bg-white">
-                  TODOS
-                </option>
-                <option value="destacados" className="bg-white">
-                  DESTAQUES
-                </option>
-                <option value="disponivel" className="bg-white">
-                  DISPONÍVEIS
-                </option>
-                <option value="ativo" className="bg-white">
-                  ATIVOS
-                </option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setGenderFilter("all")}
-                className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-                  genderFilter === "all"
-                    ? "border-amber-500 text-amber-500"
-                    : "border-gray-400 text-gray-700 hover:border-gray-600"
-                }`}
-              >
-                TODOS
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setGenderFilter("atriz")}
-                className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-                  genderFilter === "atriz"
-                    ? "border-amber-500 text-amber-500"
-                    : "border-gray-400 text-gray-700 hover:border-gray-600"
-                }`}
-              >
-                ATRIZES
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setGenderFilter("ator")}
-                className={`px-6 py-2 border transition-all duration-300 tracking-wider ${
-                  genderFilter === "ator"
-                    ? "border-amber-500 text-amber-500"
-                    : "border-gray-400 text-gray-700 hover:border-gray-600"
-                }`}
-              >
-                ATORES
-              </motion.button>
-            </div>
-          </motion.div>
-
-          {/* Atrizes Section */}
-          {(genderFilter === "all" || genderFilter === "atriz") && atrizesTalents.length > 0 && (
-            <div className="mb-24">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-                className="flex items-center gap-4 mb-12"
-              >
-                <h3 className="text-3xl md:text-4xl font-thin tracking-wider text-gray-900">ATRIZES</h3>
-                <div className="flex-1 h-px bg-gradient-to-r from-pink-400 to-transparent"></div>
-                <span className="text-pink-500 text-sm tracking-wider">{atrizesTalents.length} TALENTOS</span>
-              </motion.div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {atrizesTalents.map((talent, index) => {
-                  const mainPhotoUrl = getTalentMainPhoto(talent.id)
-                  return (
-                    <motion.div
-                      key={talent.id}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.05 }}
-                      viewport={{ once: true }}
-                      whileHover={{ y: -5, scale: 1.02 }}
-                      className="group cursor-pointer"
-                      onClick={() => handleTalentClick(talent)}
-                    >
-                      <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-gray-100 rounded-lg">
-                        {(() => {
-                          const photoUrl = getTalentMainPhoto(talent.id)
-                          console.log(`Renderizando card para ${talent.name} (ID: ${talent.id}) com foto:`, photoUrl)
-                          return null
-                        })()}
-                        {loadingPhotos[talent.id] ? (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                            <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
-                          </div>
-                        ) : (
-                          <img
-                            src={mainPhotoUrl || "/placeholder.svg"}
-                            alt={talent.name}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            onError={(e) => {
-                              e.target.src = "/placeholder.svg?height=400&width=300"
-                            }}
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        {talent.destaque && (
-                          <div className="absolute top-3 right-3">
-                            <Crown className="w-4 h-4 text-amber-500" />
-                          </div>
-                        )}
-                        {/* Favorite button */}
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            toggleFavorite(talent.id)
-                          }}
-                          className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 ${
-                            favorites.has(talent.id)
-                              ? "bg-red-500 text-white"
-                              : "bg-white/80 text-gray-700 hover:bg-white"
-                          }`}
-                        >
-                          <Heart className={`w-4 h-4 ${favorites.has(talent.id) ? "fill-current" : ""}`} />
-                        </motion.button>
-                      </div>
-                      <div className="text-center">
-                        <h4 className="font-light tracking-wider mb-1 group-hover:text-pink-500 transition-colors text-gray-900">
-                          {talent.name}
-                        </h4>
-                        <p className="text-gray-600 text-xs tracking-wider">
-                          {talent.birth_date
-                            ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
-                            : ""}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Atores Section */}
-          {(genderFilter === "all" || genderFilter === "ator") && atoresTalents.length > 0 && (
-            <div>
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-                className="flex items-center gap-4 mb-12"
-              >
-                <h3 className="text-3xl md:text-4xl font-thin tracking-wider text-gray-900">ATORES</h3>
-                <div className="flex-1 h-px bg-gradient-to-r from-blue-400 to-transparent"></div>
-                <span className="text-blue-500 text-sm tracking-wider">{atoresTalents.length} TALENTOS</span>
-              </motion.div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {atoresTalents.map((talent, index) => {
-                  const mainPhotoUrl = getTalentMainPhoto(talent.id)
-                  return (
-                    <motion.div
-                      key={talent.id}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.05 }}
-                      viewport={{ once: true }}
-                      whileHover={{ y: -5, scale: 1.02 }}
-                      className="group cursor-pointer"
-                      onClick={() => handleTalentClick(talent)}
-                    >
-                      <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-gray-100 rounded-lg">
-                        {(() => {
-                          const photoUrl = getTalentMainPhoto(talent.id)
-                          console.log(`Renderizando card para ${talent.name} (ID: ${talent.id}) com foto:`, photoUrl)
-                          return null
-                        })()}
-                        {loadingPhotos[talent.id] ? (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                          </div>
-                        ) : (
-                          <img
-                            src={mainPhotoUrl || "/placeholder.svg"}
-                            alt={talent.name}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            onError={(e) => {
-                              e.target.src = "/placeholder.svg?height=400&width=300"
-                            }}
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        {talent.destaque && (
-                          <div className="absolute top-3 right-3">
-                            <Crown className="w-4 h-4 text-amber-500" />
-                          </div>
-                        )}
-                        {/* Favorite button */}
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            toggleFavorite(talent.id)
-                          }}
-                          className={`absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 ${
-                            favorites.has(talent.id)
-                              ? "bg-red-500 text-white"
-                              : "bg-white/80 text-gray-700 hover:bg-white"
-                          }`}
-                        >
-                          <Heart className={`w-4 h-4 ${favorites.has(talent.id) ? "fill-current" : ""}`} />
-                        </motion.button>
-                      </div>
-                      <div className="text-center">
-                        <h4 className="font-light tracking-wider mb-1 group-hover:text-blue-500 transition-colors text-gray-900">
-                          {talent.name}
-                        </h4>
-                        <p className="text-gray-600 text-xs tracking-wider">
-                          {talent.birth_date
-                            ? `${new Date().getFullYear() - new Date(talent.birth_date).getFullYear()} ANOS`
-                            : ""}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
+      </div>
+      <Footer />
+    </>
   )
 }

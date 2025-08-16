@@ -30,7 +30,7 @@ export function PasswordResetProvider({ children }) {
         throw new Error("Token de autenticação não encontrado")
       }
 
-      const response = await fetch("https://megastage.onrender.com/api/v1/password-reset/request", {
+      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/password-reset/request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,7 +79,7 @@ export function PasswordResetProvider({ children }) {
         throw new Error("Token de autenticação não encontrado")
       }
 
-      const response = await fetch("https://megastage.onrender.com/api/v1/password-reset/confirm", {
+      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/password-reset/confirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
