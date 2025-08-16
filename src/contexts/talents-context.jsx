@@ -541,44 +541,85 @@ export const TalentProvider = ({ children }) => {
     }
   }
 
-  // Criar um novo trabalho anterior
-  const createPreviousJob = async (talentId, jobDescription) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const token = localStorage.getItem("token")
-      if (!token) throw new Error("Token de autenticação não encontrado")
+  // // Criar um novo trabalho anterior
+  // const createPreviousJob = async (talentId, jobDescription) => {
+  //   setLoading(true)
+  //   setError(null)
+  //   try {
+  //     const token = localStorage.getItem("token")
+  //     if (!token) throw new Error("Token de autenticação não encontrado")
 
-      const requestData = {
-        talent_id: Number.parseInt(talentId),
-        job_description: jobDescription,
-      }
+  //     const requestData = {
+  //       talent_id: Number.parseInt(talentId),
+  //       job_description: jobDescription,
+  //     }
 
-      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      })
+  //     const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/", {
+  //       method: "POST",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(requestData),
+  //     })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(`Erro ao criar trabalho anterior: ${response.status} - ${errorData.detail || ""}`)
-      }
+  //     if (!response.ok) {
+  //       const errorData = await response.json().catch(() => ({}))
+  //       throw new Error(`Erro ao criar trabalho anterior: ${response.status} - ${errorData.detail || ""}`)
+  //     }
 
-      const data = await response.json()
-      console.log("Trabalho anterior criado:", data)
-      if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId })
-      return data
-    } catch (error) {
-      setError(error.message)
-      throw error
-    } finally {
-      setLoading(false)
+  //     const data = await response.json()
+  //     console.log("Trabalho anterior criado:", data)
+  //     if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId })
+  //     return data
+  //   } catch (error) {
+  //     setError(error.message)
+  //     throw error
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
+
+
+  const createPreviousJob = async (talentId, jobDescription, textFormat) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token de autenticação não encontrado");
+
+    const requestData = {
+      talent_id: Number.parseInt(talentId),
+      job_description: jobDescription,
+      text_format: textFormat, // Adicione o alinhamento do texto aqui
+    };
+
+    const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Erro ao criar trabalho anterior: ${response.status} - ${errorData.detail || ""}`);
     }
+
+    const data = await response.json();
+    console.log("Trabalho anterior criado:", data);
+    if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId });
+    return data;
+  } catch (error) {
+    setError(error.message);
+    throw error;
+  } finally {
+    setLoading(false);
   }
+};
+
 
   // Atualizar um trabalho anterior
   const updatePreviousJob = async (previousJobId, talentId, jobDescription) => {

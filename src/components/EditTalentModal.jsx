@@ -73,6 +73,8 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
   const fileInputRef = useRef(null)
   const photoInputRef = useRef(null)
   const videoInputRef = useRef(null)
+  const [textAlignment, setTextAlignment] = useState("left"); // Novo estado para alinhamento
+
 
   // SEMPRE inicializar com STAGE
   const [formData, setFormData] = useState({
@@ -588,22 +590,40 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
     }
   }
 
-  // Funções para trabalhos anteriores
-  const handleAddPreviousJob = async () => {
-    if (!newJobDescription.trim() || addingJob) return
+  // // Funções para trabalhos anteriores
+  // const handleAddPreviousJob = async () => {
+  //   if (!newJobDescription.trim() || addingJob) return
 
-    setAddingJob(true)
-    try {
-      await createPreviousJob(talentId, newJobDescription.trim())
-      toast.success("Trabalho anterior adicionado com sucesso!")
-      setNewJobDescription("")
-      await fetchTalentPreviousJobsList(talentId)
-    } catch (error) {
-      toast.error(`Erro ao adicionar trabalho anterior: ${error.message}`)
-    } finally {
-      setAddingJob(false)
-    }
+  //   setAddingJob(true)
+  //   try {
+  //     await createPreviousJob(talentId, newJobDescription.trim())
+  //     toast.success("Trabalho anterior adicionado com sucesso!")
+  //     setNewJobDescription("")
+  //     await fetchTalentPreviousJobsList(talentId)
+  //   } catch (error) {
+  //     toast.error(`Erro ao adicionar trabalho anterior: ${error.message}`)
+  //   } finally {
+  //     setAddingJob(false)
+  //   }
+  // }
+
+
+
+  const handleAddPreviousJob = async () => {
+  if (!newJobDescription.trim() || addingJob) return;
+
+  setAddingJob(true);
+  try {
+    await createPreviousJob(talentId, newJobDescription.trim(), textAlignment); // Passar o alinhamento do texto
+    toast.success("Trabalho anterior adicionado com sucesso!");
+    setNewJobDescription("");
+    await fetchTalentPreviousJobsList(talentId);
+  } catch (error) {
+    toast.error(`Erro ao adicionar trabalho anterior: ${error.message}`);
+  } finally {
+    setAddingJob(false);
   }
+};
 
   const handleEditPreviousJob = (job) => {
     setEditingJobId(job.id)
@@ -1644,6 +1664,7 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                   rows={3}
                 />
               </div>
+              
               <motion.button
                 type="button"
                 onClick={handleAddPreviousJob}
@@ -1666,10 +1687,28 @@ export default function EditTalentModal({ isOpen, onClose, talentId, onSave }) {
                   </>
                 )}
               </motion.button>
+              
             </div>
           </div>
         </div>
       </div>
+      <div>
+  <label htmlFor="text_format" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
+    Alinhamento do Texto
+  </label>
+  <select
+    id="text_format"
+    name="text_format"
+    value={textAlignment}
+    onChange={(e) => setTextAlignment(e.target.value)}
+    className="block w-full rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:ring-opacity-50 sm:text-sm p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
+  >
+    <option value="left">Alinhado à Esquerda</option>
+    <option value="center">Centralizado</option>
+    <option value="right">Alinhado à Direita</option>
+    <option value="justify">Justificado</option>
+  </select>
+</div>
 
       {/* Lista de trabalhos anteriores */}
       <div className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/10 dark:to-purple-900/10 rounded-xl p-6 border border-pink-200 dark:border-pink-800/30 shadow-md">
