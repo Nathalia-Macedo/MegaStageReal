@@ -23,7 +23,7 @@ import {
 import { toast } from "react-toastify"
 
 export default function TalentModal({ onClose }) {
-  const { selectedTalent, isModalOpen, closeModal, toggleHighlight, openEditModal, fetchTalentPhotos, fetchTalentVideos, fetchPreviousJobs, fetchPreviousJobById } = useTalent()
+  const { selectedTalent, isModalOpen, closeModal, toggleHighlight, openEditModal, fetchTalentPhotos, fetchTalentVideosProxy, fetchPreviousJobsProxy, fetchPreviousJobById } = useTalent()
   const [isVisible, setIsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [photos, setPhotos] = useState([])
@@ -36,22 +36,6 @@ export default function TalentModal({ onClose }) {
   const modalRef = useRef(null)
   const photosContainerRef = useRef(null)
 
-  // Carregar fotos, vídeos e trabalhos automaticamente quando o modal abrir
- useEffect(() => {
-  console.log("useEffect disparado - isModalOpen:", isModalOpen, "selectedTalent.id:", selectedTalent?.id)
-  if (isModalOpen && selectedTalent?.id) {
-    console.log("Condição atendida, chamando loadPhotos, loadVideos e loadJobs")
-    loadPhotos()
-    loadVideos()
-    loadJobs()
-  }
-  return () => {
-    setPhotos([])
-    setVideos([])
-    setJobs([])
-    setSelectedPhotoIndex(null)
-  }
-}, [isModalOpen, selectedTalent?.id])
 
   const loadPhotos = async () => {
     if (!selectedTalent?.id) return
@@ -66,53 +50,69 @@ export default function TalentModal({ onClose }) {
       setLoadingPhotos(false)
     }
   }
-
-  const loadVideos = async () => {
-    if (!selectedTalent?.id) {
-      console.log("Nenhum selectedTalent.id disponível para carregar vídeos")
-      return
-    }
-    console.log("Iniciando loadVideos para o talent ID:", selectedTalent.id)
-    setLoadingVideos(true)
-    try {
-      const videosData = await fetchTalentVideos(selectedTalent.id)
-      console.log("Resposta de fetchTalentVideos (crua):", videosData)
-      const videosArray = Array.isArray(videosData) ? videosData : []
-      console.log("Vídeos processados para renderização:", videosArray)
-      setVideos(videosArray)
-    } catch (error) {
-      console.error("Erro ao carregar vídeos:", error)
-      setVideos([])
-    } finally {
-      setLoadingVideos(false)
-    }
+useEffect(() => {
+  console.log("useEffect disparado - isModalOpen:", isModalOpen, "selectedTalent.id:", selectedTalent?.id);
+  if (isModalOpen && selectedTalent?.id) {
+    console.log("Condição atendida, chamando loadPhotos, loadVideos e loadJobs");
+    loadPhotos();
+    loadVideos(); // Certifique-se de que esta função está chamando fetchTalentVideosProxy
+    loadJobs();   // Certifique-se de que esta função está chamando fetchPreviousJobsProxy
   }
+  return () => {
+    setPhotos([]);
+    setVideos([]);
+    setJobs([]);
+    setSelectedPhotoIndex(null);
+  };
+}, [isModalOpen, selectedTalent?.id]);
 
-  const loadJobs = async () => {
+const loadVideos = async () => {
   if (!selectedTalent?.id) {
-    console.log("Nenhum selectedTalent.id disponível para carregar jobs")
-    return
+    console.log("Nenhum selectedTalent.id disponível para carregar vídeos");
+    return;
   }
-  console.log("Iniciando loadJobs para o talent ID:", selectedTalent.id)
-  setLoadingJobs(true)
+  console.log("Iniciando loadVideos para o talent ID:", selectedTalent.id);
+  setLoadingVideos(true);
   try {
-    const jobsData = await fetchPreviousJobs(selectedTalent.id)
-    console.log("Resposta de fetchPreviousJobs (crua):", jobsData)
-    const jobsArray = Array.isArray(jobsData) ? jobsData : []
+    const videosData = await fetchTalentVideosProxy(selectedTalent.id); // Use a função proxy
+    console.log("Resposta de fetchTalentVideos (crua):", videosData);
+    const videosArray = Array.isArray(videosData) ? videosData : [];
+    console.log("Vídeos processados para renderização:", videosArray);
+    setVideos(videosArray);
+  } catch (error) {
+    console.error("Erro ao carregar vídeos:", error);
+    setVideos([]);
+  } finally {
+    setLoadingVideos(false);
+  }
+};
+
+const loadJobs = async () => {
+  if (!selectedTalent?.id) {
+    console.log("Nenhum selectedTalent.id disponível para carregar jobs");
+    return;
+  }
+  console.log("Iniciando loadJobs para o talent ID:", selectedTalent.id);
+  setLoadingJobs(true);
+  try {
+    const jobsData = await fetchPreviousJobsProxy(selectedTalent.id); // Use a função proxy
+    console.log("Resposta de fetchPreviousJobs (crua):", jobsData);
+    const jobsArray = Array.isArray(jobsData) ? jobsData : [];
     const validatedJobs = jobsArray.map(job => ({
       ...job,
       job_description: job.job_description || "Trabalho sem título",
       text_format: job.text_format || "Sem descrição",
-    }))
-    console.log("Jobs processados para renderização:", validatedJobs)
-    setJobs(validatedJobs)
+    }));
+    console.log("Jobs processados para renderização:", validatedJobs);
+    setJobs(validatedJobs);
   } catch (error) {
-    console.error("Erro ao carregar trabalhos:", error)
-    setJobs([])
+    console.error("Erro ao carregar trabalhos:", error);
+    setJobs([]);
   } finally {
-    setLoadingJobs(false)
+    setLoadingJobs(false);
   }
-}
+};
+
   const handleJobDetails = async (jobId) => {
     try {
       const jobDetails = await fetchPreviousJobById(jobId)
