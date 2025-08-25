@@ -309,35 +309,65 @@ export default function TalentsGallery({ onPageNavigate }) {
     // Don't update loadedImages for errors to keep placeholder
   }
 
+  // const handleNavigation = (section) => {
+  //   console.log(`[v0] Navegando para seção: ${section}`)
+
+  //   if (section === "dashboard") {
+  //     console.log(`[v0] Redirecionando para dashboard`)
+
+  //     if (onPageNavigate && typeof onPageNavigate === "function") {
+  //       onPageNavigate("dashboard")
+  //       return
+  //     }
+
+  //     // Try to call parent navigation function if available
+  //     if (window.navigateTo && typeof window.navigateTo === "function") {
+  //       window.navigateTo("dashboard")
+  //       return
+  //     }
+
+  //     // Try to dispatch a custom event for parent components to listen
+  //     window.dispatchEvent(new CustomEvent("navigate", { detail: { route: "dashboard" } }))
+
+  //     // Fallback: try to navigate using window.location if in a single-page setup
+  //     if (window.location.hash !== undefined) {
+  //       window.location.hash = "#dashboard"
+  //     }
+
+  //     return
+  //   }
+
+  //   // Handle section scrolling
+  //   const element = document.getElementById(section)
+  //   if (element) {
+  //     console.log(`[v0] Elemento encontrado para ${section}, fazendo scroll`)
+  //     element.scrollIntoView({
+  //       behavior: "smooth",
+  //       block: "start",
+  //     })
+  //   } else {
+  //     console.log(`[v0] Elemento não encontrado para seção: ${section}`)
+  //   }
+  // }
+
   const handleNavigation = (section) => {
     console.log(`[v0] Navegando para seção: ${section}`)
 
-    if (section === "dashboard") {
-      console.log(`[v0] Redirecionando para dashboard`)
-
+    // Se a seção deve ser tratada pelo componente pai (AuthenticatedApp)
+    if (["dashboard", "faca-parte","quem-somos","feminino"].includes(section)) {
+      console.log(`[v0] Redirecionando para ${section} via onPageNavigate`)
       if (onPageNavigate && typeof onPageNavigate === "function") {
-        onPageNavigate("dashboard")
+        onPageNavigate(section)
         return
       }
-
-      // Try to call parent navigation function if available
-      if (window.navigateTo && typeof window.navigateTo === "function") {
-        window.navigateTo("dashboard")
-        return
-      }
-
-      // Try to dispatch a custom event for parent components to listen
-      window.dispatchEvent(new CustomEvent("navigate", { detail: { route: "dashboard" } }))
-
-      // Fallback: try to navigate using window.location if in a single-page setup
+      // Fallback (se necessário)
       if (window.location.hash !== undefined) {
-        window.location.hash = "#dashboard"
+        window.location.hash = `#${section}`
       }
-
       return
     }
 
-    // Handle section scrolling
+    // Handle section scrolling para seções locais
     const element = document.getElementById(section)
     if (element) {
       console.log(`[v0] Elemento encontrado para ${section}, fazendo scroll`)
@@ -947,153 +977,190 @@ export default function TalentsGallery({ onPageNavigate }) {
         </section>
 
         {/* Contact Section */}
-        <section id="contato" className="py-24 bg-gradient-to-br from-gray-50 to-white">
-          <div className="max-w-7xl mx-auto px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <h3 className="text-4xl md:text-5xl font-thin tracking-wider text-gray-900 mb-6">CONTATO</h3>
-              <div className="w-24 h-px bg-gradient-to-r from-amber-400 to-transparent mx-auto mb-8"></div>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Conecte-se conosco para descobrir talentos excepcionais que transformarão seu projeto em uma experiência
-                inesquecível.
-              </p>
-            </motion.div>
+        <section id="contato" className="relative min-h-screen bg-black overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-amber-500/5 via-transparent to-amber-400/10"></div>
+            <div className="absolute top-1/4 right-1/4 w-2 h-96 bg-amber-400/30 rotate-12 animate-pulse"></div>
+            <div className="absolute bottom-1/3 left-1/3 w-1 h-64 bg-amber-500/40 -rotate-12 animate-pulse [animation-delay:1s]"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+              <div className="w-96 h-96 border border-amber-400/20 rounded-full animate-spin [animation-duration:20s]"></div>
+              <div className="absolute inset-8 border border-amber-500/30 rounded-full animate-spin [animation-duration:15s] [animation-direction:reverse]"></div>
+            </div>
+          </div>
 
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-                className="space-y-8"
-              >
-                <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="text-xl font-medium text-gray-900 mb-2">Email Corporativo</h4>
-                      <p className="text-gray-600 mb-4">Para parcerias e contratações profissionais</p>
-                      <a
-                        href="mailto:contato@megastage.com"
-                        className="text-amber-600 hover:text-amber-700 font-medium transition-colors"
-                      >
-                        contato@megastage.com
-                      </a>
-                    </div>
+          <div className="relative z-10 h-screen flex">
+            {/* Left Panel - Contact Information */}
+            <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 xl:px-24 bg-gradient-to-br from-gray-900/50 to-black/80 backdrop-blur-sm">
+              <div className="max-w-lg">
+                {/* Header */}
+                <div className="mb-16">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-0.5 bg-amber-400"></div>
+                    <span className="text-amber-400 font-medium tracking-widest text-sm uppercase">Contato Direto</span>
                   </div>
-                </div>
-
-                <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="text-xl font-medium text-gray-900 mb-2">Atendimento Direto</h4>
-                      <p className="text-gray-600 mb-4">Disponível de segunda a sexta, 9h às 18h</p>
-                      <a
-                        href="tel:+5511999999999"
-                        className="text-amber-600 hover:text-amber-700 font-medium transition-colors"
-                      >
-                        (11) 99999-9999
-                      </a>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="text-xl font-medium text-gray-900 mb-2">Localização</h4>
-                      <p className="text-gray-600 mb-4">Atendemos em todo território nacional</p>
-                      <span className="text-amber-600 font-medium">São Paulo, Brasil</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-                className="bg-gradient-to-br from-amber-50 to-amber-100 p-12 rounded-2xl"
-              >
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-amber-400 rounded-full flex items-center justify-center mx-auto mb-8">
-                    <Crown className="w-8 h-8 text-white" />
-                  </div>
-                  <h4 className="text-2xl font-light text-gray-900 mb-6 tracking-wide">
-                    PRONTO PARA DESCOBRIR
+                  <h2 className="text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-none tracking-tight mb-6">
+                    Vamos
                     <br />
-                    <span className="font-medium">TALENTOS EXCEPCIONAIS?</span>
-                  </h4>
-                  <p className="text-gray-700 mb-8 leading-relaxed">
-                    Nossa equipe especializada está pronta para conectar você aos melhores profissionais do mercado.
-                    Cada talento é cuidadosamente selecionado para garantir excelência em seu projeto.
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">
+                      Conversar
+                    </span>
+                  </h2>
+                  <p className="text-xl text-gray-300 leading-relaxed">
+                    Conecte-se conosco e descubra como podemos elevar sua carreira artística
                   </p>
-                  <div className="space-y-4">
-                    <a
-                      href="mailto:contato@megastage.com"
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-amber-400 hover:bg-amber-500 text-black rounded-lg transition-all duration-300 font-medium group shadow-lg hover:shadow-xl"
-                    >
-                      <svg
-                        className="w-5 h-5 group-hover:scale-110 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <span className="tracking-wide">INICIAR CONVERSA</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </a>
-                    <p className="text-sm text-gray-600">Resposta garantida em até 24 horas</p>
+                </div>
+
+                {/* Contact Details */}
+                <div className="space-y-8">
+                  {/* Email */}
+                  <div className="group">
+                    <div className="flex items-start gap-6">
+                      <div className="w-14 h-14 bg-amber-400/10 rounded-2xl flex items-center justify-center group-hover:bg-amber-400/20 transition-all duration-300 group-hover:scale-110">
+                        <svg className="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold text-lg mb-2 group-hover:text-amber-300 transition-colors">
+                          Email
+                        </h4>
+                        <a
+                          href="mailto:stage@megastage.com.br"
+                          className="text-amber-400 hover:text-amber-300 transition-colors text-lg font-medium"
+                        >
+                          stage@megastage.com.br
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div className="group">
+                    <div className="flex items-start gap-6">
+                      <div className="w-14 h-14 bg-amber-400/10 rounded-2xl flex items-center justify-center group-hover:bg-amber-400/20 transition-all duration-300 group-hover:scale-110">
+                        <svg className="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold text-lg mb-2 group-hover:text-amber-300 transition-colors">
+                          Telefone
+                        </h4>
+                        <a
+                          href="tel:+551138184800"
+                          className="text-amber-400 hover:text-amber-300 transition-colors text-lg font-medium"
+                        >
+                          (11) 3818-4800
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div className="group">
+                    <div className="flex items-start gap-6">
+                      <div className="w-14 h-14 bg-amber-400/10 rounded-2xl flex items-center justify-center group-hover:bg-amber-400/20 transition-all duration-300 group-hover:scale-110">
+                        <svg className="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold text-lg mb-2 group-hover:text-amber-300 transition-colors">
+                          Endereço
+                        </h4>
+                        <div className="text-gray-300 text-lg leading-relaxed">
+                          <div>Avenida Lineu de Paula Machado, 988</div>
+                          <div>Jardim Everest - 05601-001 - São Paulo</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
+            </div>
+
+            {/* Right Panel - Call to Action */}
+            <div className="hidden lg:flex w-1/2 flex-col justify-center items-center px-16 xl:px-24 bg-gradient-to-bl from-amber-400/10 via-amber-500/5 to-transparent relative">
+              {/* Decorative Elements */}
+              <div className="absolute top-20 right-20 w-32 h-32 border-2 border-amber-400/30 rotate-45 animate-pulse"></div>
+              <div className="absolute bottom-20 left-20 w-24 h-24 bg-amber-400/20 rotate-12 animate-bounce [animation-duration:3s]"></div>
+
+              <div className="text-center max-w-md">
+                {/* Icon */}
+                <div className="w-32 h-32 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-12 shadow-2xl hover:scale-110 transition-all duration-500 hover:rotate-12 hover:shadow-amber-400/50">
+                  <Crown className="w-16 h-16 text-black" />
+                </div>
+
+                {/* Title */}
+                <h3 className="text-6xl font-black text-white mb-8 leading-none">
+                  Faça
+                  <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">
+                    Parte
+                  </span>
+                </h3>
+
+                {/* Description */}
+                <p className="text-xl text-gray-300 mb-12 leading-relaxed">
+                  Transforme seu talento em uma carreira de sucesso. Junte-se à elite artística.
+                </p>
+
+                {/* CTA Button */}
+                <button
+                  onClick={() => handleNavigation("faca-parte")}
+                  className="group relative overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black px-12 py-6 rounded-2xl font-black text-xl tracking-wide transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:shadow-2xl hover:shadow-amber-400/50 active:scale-95"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative flex items-center gap-4">
+                    <Crown className="w-7 h-7 group-hover:scale-110 transition-transform group-hover:rotate-12" />
+                    <span>COMEÇAR AGORA</span>
+                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                  </div>
+                </button>
+
+                {/* Trust Indicator */}
+                <div className="flex items-center justify-center gap-3 mt-8 text-amber-400/80">
+                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium">Resposta em até 24h</span>
+                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse [animation-delay:1s]"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile CTA */}
+            <div className="lg:hidden fixed bottom-8 left-8 right-8 z-20">
+              <button
+                onClick={() => handleNavigation("faca-parte")}
+                className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black px-8 py-4 rounded-2xl font-black text-lg tracking-wide transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl"
+              >
+                <div className="flex items-center justify-center gap-3">
+                  <Crown className="w-6 h-6" />
+                  <span>FAÇA PARTE</span>
+                  <ArrowRight className="w-5 h-5" />
+                </div>
+              </button>
             </div>
           </div>
         </section>

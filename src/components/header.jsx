@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useAuth } from "../contexts/auth-context"
 import { useNotifications } from "../contexts/notification-context"
+import {useNavigate} from 'react-router-dom'
 import {
   Bell,
   UserPlus,
@@ -29,7 +30,7 @@ const iconMap = {
   RefreshCw: RefreshCw,
 }
 
-export default function Header({ onNavigate, activeTab = "dashboard" }) {
+export default function HeaderDashboard({ onNavigate, activeTab = "dashboard" }) {
   const { user, logout } = useAuth()
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
@@ -38,7 +39,7 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
   const [isMarkingAllAsRead, setIsMarkingAllAsRead] = useState(false)
   const profileRef = useRef(null)
   const notificationsRef = useRef(null)
-
+  const navigate = useNavigate()
   // Obter o contexto de notificações com verificação de existência
   const notificationsContext = useNotifications()
 
@@ -69,6 +70,12 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
     return () => window.removeEventListener("resize", checkIfMobile)
   }, [])
 
+
+   // Função para lidar com o logout
+  const handleLogout = () => {
+    logout(); // Chame a função de logout
+    onNavigate("galeria"); // Use a função onNavigate para redirecionar para a Galeria
+  }
   // Verificar se o contexto está disponível
   useEffect(() => {
     if (!notificationsContext) {
@@ -110,11 +117,7 @@ export default function Header({ onNavigate, activeTab = "dashboard" }) {
     setIsMobileMenuOpen(false)
   }
 
-  // Função para lidar com o logout
-  const handleLogout = () => {
-    logout()
-    // O redirecionamento para a tela de login será tratado no App.jsx
-  }
+
 
   // Função para navegar para o perfil
   const handleProfileClick = () => {

@@ -72,12 +72,17 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const logout = () => {
-    localStorage.removeItem("token")
-    sessionStorage.removeItem("token")
-    localStorage.removeItem("token")
-    setUser(null)
+  const logout = (navigate) => {
+  localStorage.removeItem("token")
+  sessionStorage.removeItem("token")
+  setUser (null)
+  
+  // Redirecionar para a Galeria
+  if (navigate) {
+    navigate("/galeria"); // Altere para o caminho correto da Galeria
   }
+}
+
 
   const forgotPassword = async (email) => {
     setLoading(true)

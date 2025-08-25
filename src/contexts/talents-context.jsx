@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useMemo, useState } from "react"
 import { useNotifications } from "./notification-context"
 
 const TalentContext = createContext()
@@ -17,6 +17,16 @@ export const TalentProvider = ({ children }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingTalentId, setEditingTalentId] = useState(null)
   const [loadingTalentId, setLoadingTalentId] = useState(null)
+
+// Definições para a seção "Quem Somos"
+  const [aboutDescription, setAboutDescription] = useState(""); // Para armazenar a descrição do "Quem Somos"
+  const [isAboutExisting, setIsAboutExisting] = useState(false); // Para verificar se a descrição existe
+  const [aboutMessage, setAboutMessage] = useState(""); // Para armazenar mensagens sobre a descrição
+
+
+
+
+
 
   // CORRIGIDO: Rota pública sem autenticação
   const fetchTalents = async () => {
@@ -353,8 +363,11 @@ export const TalentProvider = ({ children }) => {
       if (!token) throw new Error("Token de autenticação não encontrado")
       const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/videos`, {
         method: "GET",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json",        "ngrok-skip-browser-warning": "true",
- },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
       })
       if (!response.ok) throw new Error(`Erro ao buscar vídeos do talento: ${response.status}`)
       const data = await response.json()
@@ -389,7 +402,7 @@ export const TalentProvider = ({ children }) => {
       }
       const data = await response.json()
       console.log(`Vídeos do talento ${talentId}:`, data)
-      return data
+      return Array.isArray(data) ? data : []
     } catch (error) {
       console.error(`Erro ao buscar vídeos do talento ${talentId}:`, error)
       setError(error.message)
@@ -420,65 +433,75 @@ export const TalentProvider = ({ children }) => {
     }
   }
 
+  const updateTalentVideo = async (talentId, videoId, videoData) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Token de autenticação não encontrado")
+
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/videos/${videoId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify(videoData),
+        },
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`Erro ao atualizar vídeo: ${response.status} - ${errorData.detail || ""}`)
+      }
+
+      const data = await response.json()
+      console.log("Vídeo atualizado:", data)
+      if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId })
+      return data
+    } catch (error) {
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // ===== FUNÇÕES CRUD PARA TRABALHOS ANTERIORES =====
 
   // Buscar todos os trabalhos anteriores de um talento
-  // const fetchPreviousJobs = async (talentId) => {
-  //   setError(null)
-  //   try {
-  //     const token = localStorage.getItem("token")
-  //     if (!token) throw new Error("Token de autenticação não encontrado")
-
-  //     const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/${talentId}`, {
-  //       method: "GET",
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //         "Content-Type": "application/json",
-  //         "ngrok-skip-browser-warning": "true",
-
-  //       },
-  //     })
-
-  //     if (!response.ok) throw new Error(`Erro ao buscar trabalhos anteriores: ${response.status}`)
-
-  //     const data = await response.json()
-  //     console.log(`Trabalhos anteriores do talento ${talentId}:`, data)
-  //     return data
-  //   } catch (error) {
-  //     console.error(`Erro ao buscar trabalhos anteriores do talento ${talentId}:`, error)
-  //     setError(error.message)
-  //     throw error
-  //   }
-  // }
-
-
   const fetchPreviousJobs = async (talentId) => {
-  setError(null);
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("Token de autenticação não encontrado");
+    setError(null)
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Token de autenticação não encontrado")
 
-    // Modifique a URL para incluir o talentId como um parâmetro de consulta
-    const response = await fetch(`https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs?talent_id=${talentId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true",
-      },
-    });
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs?talent_id=${talentId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
+      )
 
-    if (!response.ok) throw new Error(`Erro ao buscar trabalhos anteriores: ${response.status}`);
+      if (!response.ok) throw new Error(`Erro ao buscar trabalhos anteriores: ${response.status}`)
 
-    const data = await response.json();
-    console.log(`Trabalhos anteriores do talento ${talentId}:`, data);
-    return data;
-  } catch (error) {
-    console.error(`Erro ao buscar trabalhos anteriores do talento ${talentId}:`, error);
-    setError(error.message);
-    throw error;
+      const data = await response.json()
+      console.log(`Trabalhos anteriores do talento ${talentId}:`, data)
+      return data
+    } catch (error) {
+      console.error(`Erro ao buscar trabalhos anteriores do talento ${talentId}:`, error)
+      setError(error.message)
+      throw error
+    }
   }
-};
 
   const fetchPreviousJobsProxy = async (talentId) => {
     setError(null)
@@ -541,85 +564,45 @@ export const TalentProvider = ({ children }) => {
     }
   }
 
-  // // Criar um novo trabalho anterior
-  // const createPreviousJob = async (talentId, jobDescription) => {
-  //   setLoading(true)
-  //   setError(null)
-  //   try {
-  //     const token = localStorage.getItem("token")
-  //     if (!token) throw new Error("Token de autenticação não encontrado")
-
-  //     const requestData = {
-  //       talent_id: Number.parseInt(talentId),
-  //       job_description: jobDescription,
-  //     }
-
-  //     const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/", {
-  //       method: "POST",
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(requestData),
-  //     })
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json().catch(() => ({}))
-  //       throw new Error(`Erro ao criar trabalho anterior: ${response.status} - ${errorData.detail || ""}`)
-  //     }
-
-  //     const data = await response.json()
-  //     console.log("Trabalho anterior criado:", data)
-  //     if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId })
-  //     return data
-  //   } catch (error) {
-  //     setError(error.message)
-  //     throw error
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
-
-
+  // Criar um novo trabalho anterior
   const createPreviousJob = async (talentId, jobDescription, textFormat) => {
-  setLoading(true);
-  setError(null);
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("Token de autenticação não encontrado");
+    setLoading(true)
+    setError(null)
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Token de autenticação não encontrado")
 
-    const requestData = {
-      talent_id: Number.parseInt(talentId),
-      job_description: jobDescription,
-      text_format: textFormat, // Adicione o alinhamento do texto aqui
-    };
+      const requestData = {
+        talent_id: Number.parseInt(talentId),
+        job_description: jobDescription,
+        text_format: textFormat, // Adicione o alinhamento do texto aqui
+      }
 
-    const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
+      const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/previous_jobs/", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      })
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Erro ao criar trabalho anterior: ${response.status} - ${errorData.detail || ""}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`Erro ao criar trabalho anterior: ${response.status} - ${errorData.detail || ""}`)
+      }
+
+      const data = await response.json()
+      console.log("Trabalho anterior criado:", data)
+      if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId })
+      return data
+    } catch (error) {
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
     }
-
-    const data = await response.json();
-    console.log("Trabalho anterior criado:", data);
-    if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId });
-    return data;
-  } catch (error) {
-    setError(error.message);
-    throw error;
-  } finally {
-    setLoading(false);
   }
-};
-
 
   // Atualizar um trabalho anterior
   const updatePreviousJob = async (previousJobId, talentId, jobDescription) => {
@@ -696,6 +679,124 @@ export const TalentProvider = ({ children }) => {
     }
   }
 
+  // ===== FUNÇÕES PARA VIDEO ORDERS (HERO SECTION) =====
+
+  // Adicionar um vídeo à ordem de exibição da hero section
+  const addVideoOrder = async (talentId, videoId, order) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Token de autenticação não encontrado")
+
+      const requestData = {
+        video_id: videoId,
+        order: order,
+      }
+
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/video_orders/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify(requestData),
+        },
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`Erro ao adicionar vídeo à hero section: ${response.status} - ${errorData.detail || ""}`)
+      }
+
+      const data = await response.json()
+      console.log("Vídeo adicionado à hero section:", data)
+      if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId })
+      return data
+    } catch (error) {
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Buscar todos os vídeos ordenados para a hero section de um talento
+  const fetchVideoOrders = async (talentId) => {
+    setError(null)
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Token de autenticação não encontrado")
+
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/video_orders/`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
+      )
+
+      if (!response.ok) throw new Error(`Erro ao buscar vídeos da hero section: ${response.status}`)
+
+      const data = await response.json()
+      console.log(`Vídeos da hero section do talento ${talentId}:`, data)
+      return Array.isArray(data) ? data : []
+    } catch (error) {
+      console.error(`Erro ao buscar vídeos da hero section do talento ${talentId}:`, error)
+      setError(error.message)
+      throw error
+    }
+  }
+
+  // Atualizar a ordem de um vídeo na hero section
+  const updateVideoOrder = async (talentId, videoId, newOrder) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("Token de autenticação não encontrado")
+
+      const requestData = {
+        order: newOrder,
+      }
+
+      const response = await fetch(
+        `https://working-lucky-ringtail.ngrok-free.app/api/v1/talents/${talentId}/video_orders/${videoId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify(requestData),
+        },
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`Erro ao atualizar ordem do vídeo: ${response.status} - ${errorData.detail || ""}`)
+      }
+
+      const data = await response.json()
+      console.log("Ordem do vídeo atualizada:", data)
+      if (notifyTalentUpdated) notifyTalentUpdated({ id: talentId })
+      return data
+    } catch (error) {
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const openModal = (talent) => {
     setSelectedTalent(talent)
     setIsModalOpen(true)
@@ -716,41 +817,222 @@ export const TalentProvider = ({ children }) => {
     setEditingTalentId(null)
   }
 
-  const value = {
-    talents,
-    loading,
-    loadingTalentId,
-    error,
-    selectedTalent,
-    isModalOpen,
-    openModal,
-    closeModal,
-    fetchTalents,
-    fetchTalentById,
-    createTalent,
-    updateTalent,
-    deleteTalent,
-    toggleHighlight,
-    importFromManager,
-    isEditModalOpen,
-    editingTalentId,
-    openEditModal,
-    closeEditModal,
-    addTalentPhotos,
-    fetchTalentPhotos,
-    deleteTalentPhoto,
-    addTalentVideos,
-    fetchTalentVideos,
-    fetchTalentVideosProxy, // Adicionando nova função proxy para vídeos
-    deleteTalentVideo,
-    // Funções de trabalhos anteriores
-    fetchPreviousJobs,
-    fetchPreviousJobsProxy, // Adicionando nova função proxy para trabalhos anteriores
-    fetchPreviousJobById,
-    createPreviousJob,
-    updatePreviousJob,
-    deletePreviousJob,
-  }
+// const fetchAbout = async () => {
+//   setLoading(true)
+//   setError(null)
+//   try {
+//     const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/proxy/about", {
+//       method: "GET",
+//       headers: {
+//         Accept: "application/json",
+//         "ngrok-skip-browser-warning": "true",
+//       },
+//     })
+//     if (!response.ok) {
+//       const errorData = await response.json().catch(() => ({}))
+//       throw new Error(`Erro ao buscar informações do Quem Somos: ${response.status} - ${errorData.detail || ""}`)
+//     }
+//     const data = await response.json()
+//     console.log("Informações do Quem Somos:", data)
+//     return data
+//   } catch (error) {
+//     console.error("Erro ao buscar Quem Somos:", error)
+//     setError(error.message)
+//     throw error // Let the component handle the 404
+//   } finally {
+//     setLoading(false)
+//   }
+// }
 
-  return <TalentContext.Provider value={value}>{children}</TalentContext.Provider>
+
+const fetchAbout = async () => {
+  setLoading(true)
+  setError(null)
+  try {
+    const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/proxy/about", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
+    })
+    
+    if (response.status === 404) {
+      setAboutDescription("")
+      setIsAboutExisting(false)
+      setAboutMessage("Ainda não há descrição cadastrada.")
+      return
+    }
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(`Erro ao buscar informações do Quem Somos: ${response.status} - ${errorData.detail || ""}`)
+    }
+    
+    const data = await response.json()
+    console.log("Informações do Quem Somos:", data)
+    setAboutDescription(data.description)
+    setIsAboutExisting(true)
+    setAboutMessage("")
+  } catch (error) {
+    console.error("Erro ao buscar Quem Somos:", error)
+    setError(error.message)
+    setAboutDescription("")
+    setIsAboutExisting(false)
+    setAboutMessage("Erro ao carregar a descrição.")
+  } finally {
+    setLoading(false) // Sempre redefina o loading para false aqui
+  }
+}
+
+
+
+
+const createAbout = async (description) => {
+  setLoading(true)
+  setError(null)
+  try {
+    const token = localStorage.getItem("token")
+    if (!token) throw new Error("Token de autenticação não encontrado")
+    const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/about", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
+      body: JSON.stringify({ description }),
+    })
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(`Erro ao criar informações do Quem Somos: ${response.status} - ${errorData.detail || ""}`)
+    }
+    const data = await response.json()
+    console.log("Quem Somos criado:", data)
+    return data
+  } catch (error) {
+    console.error("Erro ao criar Quem Somos:", error)
+    setError(error.message)
+    throw error
+  } finally {
+    setLoading(false)
+  }
+}
+
+const updateAbout = async (description) => {
+  setLoading(true)
+  setError(null)
+  try {
+    const token = localStorage.getItem("token")
+    if (!token) throw new Error("Token de autenticação não encontrado")
+    const response = await fetch("https://working-lucky-ringtail.ngrok-free.app/api/v1/about", {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
+      body: JSON.stringify({ description }),
+    })
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(`Erro ao atualizar informações do Quem Somos: ${response.status} - ${errorData.detail || ""}`)
+    }
+    const data = await response.json()
+    console.log("Quem Somos atualizado:", data)
+    return data
+  } catch (error) {
+    console.error("Erro ao atualizar Quem Somos:", error)
+    setError(error.message)
+    throw error
+  } finally {
+    setLoading(false)
+  }
+}
+const value = useMemo(() => ({
+  talents,
+  loading,
+  loadingTalentId,
+  error,
+  selectedTalent,
+  isModalOpen,
+  openModal,
+  closeModal,
+  fetchTalents,
+  fetchTalentById,
+  createTalent,
+  updateTalent,
+  deleteTalent,
+  toggleHighlight,
+  importFromManager,
+  isEditModalOpen,
+  editingTalentId,
+  openEditModal,
+  closeEditModal,
+  addTalentPhotos,
+  fetchTalentPhotos,
+  deleteTalentPhoto,
+  addTalentVideos,
+  fetchTalentVideos,
+  fetchTalentVideosProxy,
+  deleteTalentVideo,
+  updateTalentVideo,
+  // Funções de trabalhos anteriores
+  fetchPreviousJobs,
+  fetchPreviousJobsProxy,
+  fetchPreviousJobById,
+  createPreviousJob,
+  updatePreviousJob,
+  deletePreviousJob,
+  // Funções de video orders (hero section)
+  addVideoOrder,
+  fetchVideoOrders,
+  updateVideoOrder,
+  // Funções da página quem somos
+  fetchAbout,
+  createAbout,
+  updateAbout,
+}), [
+  talents,
+  loading,
+  loadingTalentId,
+  error,
+  selectedTalent,
+  isModalOpen,
+  openModal,
+  closeModal,
+  fetchTalents,
+  fetchTalentById,
+  createTalent,
+  updateTalent,
+  deleteTalent,
+  toggleHighlight,
+  importFromManager,
+  isEditModalOpen,
+  editingTalentId,
+  openEditModal,
+  closeEditModal,
+  addTalentPhotos,
+  fetchTalentPhotos,
+  deleteTalentPhoto,
+  addTalentVideos,
+  fetchTalentVideos,
+  fetchTalentVideosProxy,
+  deleteTalentVideo,
+  updateTalentVideo,
+  fetchPreviousJobs,
+  fetchPreviousJobsProxy,
+  fetchPreviousJobById,
+  createPreviousJob,
+  updatePreviousJob,
+  deletePreviousJob,
+  addVideoOrder,
+  fetchVideoOrders,
+  updateVideoOrder,
+  fetchAbout,
+  createAbout,
+  updateAbout,
+])
+
+return <TalentContext.Provider value={value}>{children}</TalentContext.Provider>
 }
