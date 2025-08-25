@@ -1,30 +1,23 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Crown, Users, Award, Star, Building, Briefcase } from "lucide-react"
 import { useTalent } from "../contexts/talents-context"
+
 const QuemSomosPage = () => {
-  const { fetchAbout, loading, error } = useTalent()
-  const [aboutContent, setAboutContent] = useState(null)
-  // Variáveis para a seção "Quem Somos"
-  const [aboutDescription, setAboutDescription] = useState(""); // Para armazenar a descrição do "Quem Somos"
-  const [isAboutExisting, setIsAboutExisting] = useState(false); // Para verificar se a descrição existe
-  const [aboutMessage, setAboutMessage] = useState(""); // Para armazenar mensagens sobre a descrição
+  const { fetchAbout, loading, error, aboutDescription, isAboutExisting, aboutMessage } = useTalent()
+
   // Fetch "Quem Somos" content on mount
   useEffect(() => {
-    const loadAbout = async () => {
-      try {
-        const data = await fetchAbout()
-        // Split description by double newlines (\n\n) or fallback to single string
-        const sections = data.description
-          ? data.description.split("\n\n").filter((section) => section.trim() !== "")
-          : ["Informações sobre o MegaSTAGE não disponíveis no momento."]
-        setAboutContent(sections)
-      } catch (err) {
-        console.error("Erro ao carregar Quem Somos:", err)
-      }
-    }
-    loadAbout()
+    fetchAbout()
   }, [fetchAbout])
+
+  // Split description into sections, with fallback if empty
+  const aboutContent = useMemo(() => {
+    if (!isAboutExisting || !aboutDescription) {
+      return ["Informações sobre o MegaSTAGE não disponíveis no momento."]
+    }
+    return aboutDescription.split("\n\n").filter((section) => section.trim() !== "")
+  }, [aboutDescription, isAboutExisting])
 
   const fadeInUp = {
     initial: { opacity: 0, y: 30 },
@@ -122,6 +115,8 @@ const QuemSomosPage = () => {
             <div className="text-center text-gray-600 text-lg">Carregando...</div>
           ) : error ? (
             <div className="text-center text-red-600 text-lg">Erro: {error}</div>
+          ) : aboutMessage ? (
+            <div className="text-center text-gray-600 text-lg">{aboutMessage}</div>
           ) : (
             <motion.div
               variants={staggerContainer}
@@ -130,27 +125,43 @@ const QuemSomosPage = () => {
               viewport={{ once: true, margin: "-50px" }}
               className="space-y-12"
             >
-              {aboutContent &&
-                aboutContent.map((section, index) => {
-                  const header = sectionHeaders[index] || {
-                    title: `SEÇÃO ${index + 1}`,
-                    highlight: "",
-                    icon: <Star className="w-6 h-6 text-amber-500" />,
-                  }
-                  return (
-                    <motion.div
-                      key={index}
-                      className={`bg-gradient-to-br ${
-                        header.isCentered ? "from-amber-50 to-amber-100" : "from-gray-50 to-white"
-                      } border ${header.isCentered ? "border-amber-200" : "border-gray-200"} rounded-2xl p-8 lg:p-12 shadow-sm`}
-                      variants={fadeInUp}
-                    >
-                      {header.isCentered ? (
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-amber-400 rounded-full flex items-center justify-center mx-auto mb-8">
-                            {header.icon}
-                          </div>
-                          <h3 className="text-2xl lg:text-3xl font-light text-gray-900 mb-6 tracking-wide">
+              {aboutContent.map((section, index) => {
+                const header = sectionHeaders[index] || {
+                  title: `SEÇÃO ${index + 1}`,
+                  highlight: "",
+                  icon: <Star className="w-6 h-6 text-amber-500" />,
+                }
+                return (
+                  <motion.div
+                    key={index}
+                    className={`bg-gradient-to-br ${
+                      header.isCentered ? "from-amber-50 to-amber-100" : "from-gray-50 to-white"
+                    } border ${header.isCentered ? "border-amber-200" : "border-gray-200"} rounded-2xl p-8 lg:p-12 shadow-sm`}
+                    variants={fadeInUp}
+                  >
+                    {header.isCentered ? (
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-amber-400 rounded-full flex items-center justify-center mx-auto mb-8">
+                          {header.icon}
+                        </div>
+                        <h3 className="text-2xl lg:text-3xl font-light text-gray-900 mb-6 tracking-wide">
+                          {header.title.split(" ").map((word, i) =>
+                            word === header.highlight ? (
+                              <span key={i} className="text-amber-500">
+                                {word}{" "}
+                              </span>
+                            ) : (
+                              word + " "
+                            ),
+                          )}
+                        </h3>
+                        <p className="text-lg text-gray-700 leading-relaxed max-w-2xl mx-auto">{section}</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-3 mb-6">
+                          {header.icon}
+                          <h2 className="text-2xl lg:text-3xl font-light text-gray-900 tracking-wide">
                             {header.title.split(" ").map((word, i) =>
                               word === header.highlight ? (
                                 <span key={i} className="text-amber-500">
@@ -160,31 +171,14 @@ const QuemSomosPage = () => {
                                 word + " "
                               ),
                             )}
-                          </h3>
-                          <p className="text-lg text-gray-700 leading-relaxed max-w-2xl mx-auto">{section}</p>
+                          </h2>
                         </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-3 mb-6">
-                            {header.icon}
-                            <h2 className="text-2xl lg:text-3xl font-light text-gray-900 tracking-wide">
-                              {header.title.split(" ").map((word, i) =>
-                                word === header.highlight ? (
-                                  <span key={i} className="text-amber-500">
-                                    {word}{" "}
-                                  </span>
-                                ) : (
-                                  word + " "
-                                ),
-                              )}
-                            </h2>
-                          </div>
-                          <p className="text-lg text-gray-700 leading-relaxed">{section}</p>
-                        </>
-                      )}
-                    </motion.div>
-                  )
-                })}
+                        <p className="text-lg text-gray-700 leading-relaxed">{section}</p>
+                      </>
+                    )}
+                  </motion.div>
+                )
+              })}
             </motion.div>
           )}
         </div>
